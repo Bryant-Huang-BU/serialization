@@ -11,17 +11,18 @@ public class Result extends Object{
     private long fileSize;
     private String fileName;
     public Result(MessageInput in) throws IOException, BadAttributeValueException {
-        int fileIDLength = in.readInt();
+        DataInputStream dataIn = new DataInputStream(in.getIn());
+        int fileIDLength = in.getIn().readInt();
         if (fileIDLength < 0) {
             throw new BadAttributeValueException("fileIDLength is negative", "fileIDLength");
         }
         fileID = new byte[fileIDLength];
-        in.readFully(fileID);
-        fileSize = in.readLong();
+        in.getIn().readFully(fileID);
+        fileSize = in.getIn().readLong();
         if (fileSize < 0) {
             throw new BadAttributeValueException("fileSize is negative", "fileSize");
         }
-        int fileNameLength = in.readInt();
+        int fileNameLength = in.getIn().readInt();
         if (fileNameLength < 0) {
             throw new BadAttributeValueException("fileNameLength is negative", "fileNameLength");
         }
@@ -41,9 +42,12 @@ public class Result extends Object{
 
     }
     public void encode(MessageOutput out) throws IOException {
-        //check to see if output stream is valid
-        //if valid, output the attributes of the class in header to the output
-        //stream
+        DataOutputStream dataOut = new DataOutputStream(out.getOut());
+        dataOut.writeInt(fileID.length);
+        dataOut.write(fileID);
+        dataOut.writeLong(fileSize);
+        dataOut.writeInt(fileName.length());
+        dataOut.write(fileName.getBytes("UTF-8"));
     }
     @Override
     public String toString() {
@@ -89,7 +93,4 @@ public class Result extends Object{
         this.fileName = fileName;
         return this;
     }
-
-
-
 }

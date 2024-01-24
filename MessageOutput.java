@@ -14,4 +14,8 @@ public class MessageOutput extends Object{
         }
         this.out = out;
     }
+    
+    public getOut() {
+        return out;
+    }
 }
