@@ -17,9 +17,10 @@ public class Result extends Object{
         byte[] fileSize = new byte[8];
         in.readBytes(fileSize, 4, 8);
         setFileSize(byteToLong(fileSize));
-        byte[] fileName = new byte[10];
-        while (in.readBytes(fileName, 0, 4) != -1) {
-            setFileName(new String(fileName));
+        int x;
+        String fileName = new String("");
+        while (x = in.readBytes(fileName, 0, 4) != -1) {
+            fileName += (char) x;
         }
     }
 
