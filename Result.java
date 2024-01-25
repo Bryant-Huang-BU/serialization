@@ -11,24 +11,16 @@ public class Result extends Object{
     private long fileSize;
     private String fileName;
     public Result(MessageInput in) throws IOException, BadAttributeValueException {
-        DataInputStream dataIn = new DataInputStream(in.getIn());
-        int fileIDLength = in.getIn().readInt();
-        if (fileIDLength < 0) {
-            throw new BadAttributeValueException("fileIDLength is negative", "fileIDLength");
+        byte[] fileID = new byte[4];
+        in.readBytes(fileID, 0, 4);
+        setFileID(byteToInt(fileID));
+        byte[] fileSize = new byte[8];
+        in.readBytes(fileSize, 4, 8);
+        setFileSize(byteToLong(fileSize));
+        byte[] fileName = new byte[10];
+        while (in.readBytes(fileName, 0, 4) != -1) {
+            setFileName(new String(fileName));
         }
-        fileID = new byte[fileIDLength];
-        in.getIn().readFully(fileID);
-        fileSize = in.getIn().readLong();
-        if (fileSize < 0) {
-            throw new BadAttributeValueException("fileSize is negative", "fileSize");
-        }
-        int fileNameLength = in.getIn().readInt();
-        if (fileNameLength < 0) {
-            throw new BadAttributeValueException("fileNameLength is negative", "fileNameLength");
-        }
-        byte[] fileNameBytes = new byte[fileNameLength];
-        in.readFully(fileNameBytes);
-        fileName = new String(fileNameBytes, "UTF-8");
     }
 
     public Result(byte[] fileID, long fileSize, String fileName) throws BadAttributeValueException {
@@ -92,5 +84,20 @@ public class Result extends Object{
         //if filled with something valid, set filesize to parameter
         this.fileName = fileName;
         return this;
+    }
+    private int byteToInt(byte[] bytes) {
+        int result = 0;
+        for (int i = 0; i < bytes.length; i++) {
+            result = result | (bytes[i] << (i * 8));
+        }
+        return result;
+    }
+
+    private long byteToLong(byte[] bytes) {
+        long result = 0;
+        for (int i = 0; i < bytes.length; i++) {
+            result = result | (bytes[i] << (i * 8));
+        }
+        return result;
     }
 }
