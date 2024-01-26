@@ -31,5 +31,26 @@ public class MessageInput extends Object {
             return bytes; //return bytes
     }*/
 
-
+    public bytes[] readBytes(byte[] bytes, int off, int len) throws IOException {
+            if (bytes == null) { //check to see if bytes is null
+                    throw new NullPointerException("bytes is null"); //throw exception
+            }
+            if (off < 0) { //check to see if off is less than 0
+                    throw new IndexOutOfBoundsException("off is less than 0"); //throw exception
+            }
+            if (len < 0) { //check to see if len is less than 0
+                    throw new IndexOutOfBoundsException("len is less than 0"); //throw exception
+            }
+            if (len > bytes.length - off) { //check to see if len is greater than bytes.length - off
+                    throw new IndexOutOfBoundsException("len is greater than bytes.length - off"); //throw exception
+            }
+            if (len == 0) { //check to see if len is 0
+                    return 0; //return 0
+            }
+            int n = in.read(bytes, off, len); //read bytes
+            if (n < 0) { //check to see if n is less than 0
+                    return -1; //return -1
+            }
+            return n; //return n
+    }
 }
