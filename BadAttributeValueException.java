@@ -5,7 +5,7 @@
 package serialization;
 import java.io.Serializable;
 import java.lang.*;
-public class BadAttributeValueException extends Exception implements Serializable{
+public class BadAttributeValueException extends Exception implements Serializable {
     private String attribute;
     public BadAttributeValueException(String message, String attribute) throws NullPointerException {
         super(message);

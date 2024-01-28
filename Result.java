@@ -11,20 +11,20 @@ public class Result extends Object{
     private String fileName;
     public Result(MessageInput in) throws IOException, BadAttributeValueException {
         byte[] fileID = new byte[4];
-        in.readBytes(fileID, 0, 4);
-        setFileID(byteToInt(fileID));
-        byte[] fileSize = new byte[8];
-        in.readBytes(fileSize, 4, 8);
-        setFileSize(byteToLong(fileSize));
+        in.getIn().read(fileID, 0, 4);
+        setFileID(fileID);
+        byte[] fileSize = new byte[4];
+        in.getIn().read(fileSize, 4, 4);
+        setFileSize(byteToInt(fileSize));
         int x;
-        String fileName = new String("");
-        while (x = in.readBytes(fileName, 0, 4) != -1) {
+        String fileName = "";
+        while ((x = in.getIn().read()) != -1){
             if ((char) x == '\n') {
                 break;
             }
             fileName += (char) x;
         }
-        if (x == -1 || length(fileName) == 0){
+        if (x == -1 || fileName.isEmpty()){
             throw new IOException("EOF");
         }
         setFileName(fileName);
@@ -59,13 +59,13 @@ public class Result extends Object{
     public byte[] getFileID() {
         return fileID;
     }
-    public final Result setFileID(byte[] fileID) throws BadAttributeValueException {
+    public final Result setFileID(byte[] i) throws BadAttributeValueException {
         //check to see if fileID isn't empty
-        if (fileID == null) {
+        if (i == null) {
             throw new BadAttributeValueException("fileID is null", "fileID");
         }
         //if filled with something valid, set fileID to parameter
-        this.fileID = fileID;
+        this.fileID = i;
         return this;
     }
     public long getFileSize() {
@@ -94,17 +94,19 @@ public class Result extends Object{
     }
     private int byteToInt(byte[] bytes) {
         int result = 0;
+        System.out.println(bytes.length);
         for (int i = 0; i < bytes.length; i++) {
             result = result | (bytes[i] << (i * 8));
+            System.out.println(result);
         }
         return result;
     }
 
-    private long byteToLong(byte[] bytes) {
+    /*private long byteToLong(byte[] bytes) {
         long result = 0;
         for (int i = 0; i < bytes.length; i++) {
             result = result | (bytes[i] << (i * 8));
         }
         return result;
-    }
+    }*/
 }

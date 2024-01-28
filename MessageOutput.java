@@ -4,6 +4,7 @@
  */
 
 package serialization;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.Object;
 public class MessageOutput extends Object{
@@ -15,7 +16,7 @@ public class MessageOutput extends Object{
         this.out = out;
     }
     
-    public getOut() {
+    public OutputStream getOut() {
         return out;
     }
 
