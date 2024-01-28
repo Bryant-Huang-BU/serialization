@@ -2,7 +2,6 @@
  * Name: Bryant Huang
  * Project 0
  */
-
 package serialization;
 import java.io.*;
 import java.lang.*;
@@ -20,8 +19,15 @@ public class Result extends Object{
         int x;
         String fileName = new String("");
         while (x = in.readBytes(fileName, 0, 4) != -1) {
+            if ((char) x == '\n') {
+                break;
+            }
             fileName += (char) x;
         }
+        if (x == -1 || length(fileName) == 0){
+            throw new IOException("EOF");
+        }
+        setFileName(fileName);
     }
 
     public Result(byte[] fileID, long fileSize, String fileName) throws BadAttributeValueException {
