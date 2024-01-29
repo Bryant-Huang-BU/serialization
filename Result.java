@@ -5,29 +5,55 @@
 package serialization;
 import java.io.*;
 import java.lang.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+
 public class Result extends Object{
     private byte[] fileID;
     private long fileSize;
     private String fileName;
     public Result(MessageInput in) throws IOException, BadAttributeValueException {
-        byte[] fileID = new byte[4];
-        in.getIn().read(fileID, 0, 4);
+        if (in == null) {
+            throw new NullPointerException("in is null");
+        }
+        if (in.getIn().available() < 9) {
+            throw new IOException("Not Big Enough");
+        }
+        byte[] wholeByte = in.readAllBytes();
+        int off = 0;
+        int len = 4;
+        byte[] fileID = new byte[len];
+        System.arraycopy(wholeByte, off, fileID, 0, len);
         setFileID(fileID);
-        byte[] fileSize = new byte[4];
-        in.getIn().read(fileSize, 4, 4);
-        setFileSize(byteToInt(fileSize));
-        int x;
-        String fileName = "";
-        while ((x = in.getIn().read()) != -1){
-            if ((char) x == '\n') {
+        off += len;
+        byte[] fileSize = new byte[len];
+        System.arraycopy(wholeByte, off, fileSize, 0, len);
+        /*for (byte b : wholeByte) {
+            System.out.print(b);
+        }
+        System.out.print('\n');
+        for (byte b : fileSize) {
+            System.out.print(b);
+        }
+        System.out.print('\n');*/
+        setFileSize(byteToUnsignedInt(fileSize));
+        off += len;
+        StringBuilder fileName = new StringBuilder();
+        while (off < wholeByte.length) {
+            System.out.println((char) wholeByte[off]);
+            if ((char) wholeByte[off] == '\n') {
                 break;
             }
-            fileName += (char) x;
+            fileName.append((char) wholeByte[off]);
+            off++;
+            if (off == wholeByte.length) {
+                throw new IOException("No new line");
+            }
         }
-        if (x == -1 || fileName.isEmpty()){
-            throw new IOException("EOF");
+        if (fileName.isEmpty()) {
+            throw new IOException("No FileName");
         }
-        setFileName(fileName);
+        setFileName(fileName.toString());
     }
 
     public Result(byte[] fileID, long fileSize, String fileName) throws BadAttributeValueException {
@@ -44,16 +70,18 @@ public class Result extends Object{
         DataOutputStream dataOut = new DataOutputStream(out.getOut());
         dataOut.writeInt(fileID.length);
         dataOut.write(fileID);
-        dataOut.writeLong(fileSize);
-        dataOut.writeInt(fileName.length());
+        //dataOut.writeInt(fileSize); TODO
         dataOut.write(fileName.getBytes("UTF-8"));
+        dataOut.write('\n');
     }
     @Override
     public String toString() {
-        return "Result{" +
-                "fileID=" + fileID +
-                ", fileSize=" + fileSize +
-                ", fileName='" + fileName + '\'' +
+        String fileID = "";
+        for (byte b : this.fileID) {
+            fileID += b;
+        }
+        return "Result{" + "fileID=" + fileID + ", fileSize=" + fileSize +
+                ", fileName=" + fileName +
                 '}';
     }
     public byte[] getFileID() {
@@ -90,9 +118,10 @@ public class Result extends Object{
         }
         //if filled with something valid, set filesize to parameter
         this.fileName = fileName;
+        System.out.println(this.fileName);
         return this;
     }
-    private int byteToInt(byte[] bytes) {
+    /*private int byteToInt(byte[] bytes) {
         int result = 0;
         System.out.println(bytes.length);
         for (int i = 0; i < bytes.length; i++) {
@@ -100,13 +129,11 @@ public class Result extends Object{
             System.out.println(result);
         }
         return result;
-    }
-
-    /*private long byteToLong(byte[] bytes) {
-        long result = 0;
-        for (int i = 0; i < bytes.length; i++) {
-            result = result | (bytes[i] << (i * 8));
-        }
-        return result;
     }*/
+
+    private long byteToUnsignedInt(byte[] bytes) {
+        long result = ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL; // Convert to unsigned long
+        //System.out.println(result);
+        return result;
+    }
 }
