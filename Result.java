@@ -28,14 +28,6 @@ public class Result extends Object{
         off += len;
         byte[] fileSize = new byte[len];
         System.arraycopy(wholeByte, off, fileSize, 0, len);
-        /*for (byte b : wholeByte) {
-            System.out.print(b);
-        }
-        System.out.print('\n');
-        for (byte b : fileSize) {
-            System.out.print(b);
-        }
-        System.out.print('\n');*/
         setFileSize(byteToUnsignedInt(fileSize));
         off += len;
         StringBuilder fileName = new StringBuilder();
@@ -67,12 +59,11 @@ public class Result extends Object{
 
     }
     public void encode(MessageOutput out) throws IOException {
-        DataOutputStream dataOut = new DataOutputStream(out.getOut());
-        dataOut.writeInt(fileID.length);
-        dataOut.write(fileID);
-        //dataOut.writeInt(fileSize); TODO
-        dataOut.write(fileName.getBytes("UTF-8"));
-        dataOut.write('\n');
+        out.getOut().write(fileID, 0, 0);
+        out.getOut().write(longToBytes(), 0, 4);
+        out.getOut().write(fileName.getBytes(StandardCharsets.UTF_8), 0, fileName.length());
+        out.getOut().write('\n');
+        //write file information into output stream
     }
     @Override
     public String toString() {
@@ -135,5 +126,16 @@ public class Result extends Object{
         long result = ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL; // Convert to unsigned long
         //System.out.println(result);
         return result;
+    }
+    private byte[] longToBytes () {
+        if (fileSize < 0 || fileSize > 0xFFFFFFFFL) {
+            throw new IllegalArgumentException("Value out of range for uint32: " + fileSize);
+        }
+        byte[] bytes = new byte[4];
+        bytes[0] = (byte) (fileSize >> 24);
+        bytes[1] = (byte) (fileSize >> 16);
+        bytes[2] = (byte) (fileSize >> 8);
+        bytes[3] = (byte) (fileSize);
+        return bytes;
     }
 }
