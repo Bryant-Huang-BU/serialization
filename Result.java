@@ -12,43 +12,49 @@ public class Result extends Object{
     private byte[] fileID;
     private long fileSize;
     private String fileName;
-    public Result(MessageInput in) throws IOException, BadAttributeValueException {
+    public Result(MessageInput in) throws IOException,
+            BadAttributeValueException {
         if (in == null) {
-            throw new NullPointerException("in is null");
+            throw new IOException("in is null");
         }
         if (in.getIn().available() < 9) {
             throw new IOException("Not Big Enough");
         }
-        byte[] wholeByte = in.readAllBytes();
-        int off = 0;
-        int len = 4;
-        byte[] fileID = new byte[len];
-        System.arraycopy(wholeByte, off, fileID, 0, len);
-        setFileID(fileID);
-        off += len;
-        byte[] fileSize = new byte[len];
-        System.arraycopy(wholeByte, off, fileSize, 0, len);
-        setFileSize(byteToUnsignedInt(fileSize));
-        off += len;
-        StringBuilder fileName = new StringBuilder();
-        while (off < wholeByte.length) {
-            System.out.println((char) wholeByte[off]);
-            if ((char) wholeByte[off] == '\n') {
-                break;
+        try {
+            byte[] wholeByte = in.readAllBytes();
+            int off = 0;
+            int len = 4;
+            byte[] fileID = new byte[len];
+            System.arraycopy(wholeByte, off, fileID, 0, len);
+            setFileID(fileID);
+            off += len;
+            byte[] fileSize = new byte[len];
+            System.arraycopy(wholeByte, off, fileSize, 0, len);
+            setFileSize(byteToUnsignedInt(fileSize));
+            off += len;
+            StringBuilder fileName = new StringBuilder();
+            while (off < wholeByte.length) {
+                System.out.println((char) wholeByte[off]);
+                if ((char) wholeByte[off] == '\n') {
+                    break;
+                }
+                fileName.append((char) wholeByte[off]);
+                off++;
+                if (off == wholeByte.length) {
+                    throw new IOException("No new line");
+                }
             }
-            fileName.append((char) wholeByte[off]);
-            off++;
-            if (off == wholeByte.length) {
-                throw new IOException("No new line");
+            if (fileName.isEmpty()) {
+                throw new IOException("No FileName");
             }
+            setFileName(fileName.toString());
+        } catch() {
+
         }
-        if (fileName.isEmpty()) {
-            throw new IOException("No FileName");
-        }
-        setFileName(fileName.toString());
     }
 
-    public Result(byte[] fileID, long fileSize, String fileName) throws BadAttributeValueException {
+    public Result(byte[] fileID, long fileSize, String fileName)
+        throws BadAttributeValueException {
         setFileID(fileID);
         setFileSize(fileSize);
         setFileName(fileName);
@@ -59,10 +65,16 @@ public class Result extends Object{
 
     }
     public void encode(MessageOutput out) throws IOException {
-        out.getOut().write(fileID, 0, 0);
-        out.getOut().write(longToBytes(), 0, 4);
-        out.getOut().write(fileName.getBytes(StandardCharsets.UTF_8), 0, fileName.length());
-        out.getOut().write('\n');
+        try {
+            out.getOut().write(fileID, 0, 4);
+            out.getOut().write(longToBytes(), 0, 4);
+            out.getOut().write(fileName.getBytes(StandardCharsets.UTF_8),
+        0, fileName.length());
+            out.getOut().write('\n');
+        }
+        catch (Exception E) {
+            throw new IOException("Bad write");3
+        }
         //write file information into output stream
     }
     @Override
@@ -90,9 +102,11 @@ public class Result extends Object{
     public long getFileSize() {
         return fileSize;
     }
-    public final Result setFileSize(long fileSize) throws BadAttributeValueException {
+    public final Result setFileSize(long fileSize)
+        throws BadAttributeValueException {
         if (fileSize < 0) {
-            throw new BadAttributeValueException("fileSize is negative", "fileSize");
+            throw
+            new BadAttributeValueException("fileSize is negative", "fileSize");
         }
         //check to see if fileSize is valid
         //if filled with something valid, set filesize to parameter
@@ -102,14 +116,16 @@ public class Result extends Object{
     public String getFileName() {
         return fileName;
     }
-    public final Result setFileName(String fileName) throws BadAttributeValueException {
+    public final Result setFileName(String fileName)
+        throws BadAttributeValueException {
         //check to see if fileSize is valid
         if (fileName == null) {
-            throw new BadAttributeValueException("fileName is null", "fileName");
+            throw
+            new BadAttributeValueException("fileName is null", "fileName");
         }
         //if filled with something valid, set filesize to parameter
         this.fileName = fileName;
-        System.out.println(this.fileName);
+        //System.out.println(this.fileName);
         return this;
     }
     /*private int byteToInt(byte[] bytes) {
@@ -122,14 +138,19 @@ public class Result extends Object{
         return result;
     }*/
 
-    private long byteToUnsignedInt(byte[] bytes) {
-        long result = ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL; // Convert to unsigned long
+    private long byteToUnsignedInt(byte[] bytes) throws NullPointerException {
+        if (bytes == null) {
+            throw new NullPointerException("byte array is null");
+        }
+        long result = ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL;
+        // Convert to unsigned long
         //System.out.println(result);
         return result;
     }
     private byte[] longToBytes () {
         if (fileSize < 0 || fileSize > 0xFFFFFFFFL) {
-            throw new IllegalArgumentException("Value out of range for uint32: " + fileSize);
+            throw new IllegalArgumentException
+            ("Value out of range for uint32: " + fileSize);
         }
         byte[] bytes = new byte[4];
         bytes[0] = (byte) (fileSize >> 24);

@@ -9,22 +9,28 @@ public class BadAttributeValueException extends Exception implements Serializabl
     private String attribute;
     public BadAttributeValueException(String message, String attribute) throws NullPointerException {
         super(message);
-        if (message == null || attribute == null) {
-            throw new NullPointerException();
+        try {
+            if (message == null || attribute == null) {
+                throw new NullPointerException();
+            }
+            //construct object
+            this.attribute = attribute;
+        } catch (NullPointerException e) {
+            throw new NullPointerException("message or attribute is null");
         }
-        //construct object
-        this.attribute = attribute;
-    }
     public String getAttribute() {
         return this.attribute;
     }
     public BadAttributeValueException(String message, String attribute, Throwable cause) throws NullPointerException {
         super(message, cause);
-        if (message == null || attribute == null || cause == null) {
-            throw new NullPointerException();
+        try {
+            if (message == null || attribute == null || cause == null) {
+                throw new NullPointerException();
+            }
+            //construct object
+            this.attribute = attribute;
+        } catch (NullPointerException e) {
+            throw new NullPointerException("message, attribute, or cause is null");
         }
-        //construct object
-        this.attribute = attribute;
-    }
-
+    }  
 }
