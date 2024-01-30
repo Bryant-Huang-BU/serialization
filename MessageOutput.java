@@ -38,4 +38,9 @@ public class MessageOutput extends Object{
         }
         out.write(bytes, off, len);
     }
+
+    public void toByteArray() {
+        
+        throw new UnsupportedOperationException("Unimplemented method 'toByteArray'");
+    }
 }
