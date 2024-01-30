@@ -107,22 +107,13 @@ public class tests {
         Result r = new Result(null);
         assertEquals("Result{fileID=0, fileSize=0, fileName='\0'}", r.toString());
     }
-    /*@Test
+    @Test
     public void testEncode() throws NullPointerException, IOException, BadAttributeValueException {
         byte[] result = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, '\0', '\n'};
         //should throw IOException
-        Result r = new Result(new MessageInput(new ByteArrayInputStream(result)));
-        Result out = new MessageOutput(new ByteArrayOutputStream());
+        var r = new Result(new MessageInput(new ByteArrayInputStream(result)));
+        var out = new MessageOutput(new ByteArrayOutputStream());
         byte[] bytes = r.encode(out);
         assertArrayEquals(new byte[] {1, 2, 3, 4, 0, 0, 0, 30, 'f', 'o', 'o', 'n', '\n', 'w', 'h', 'e'}, );
     }*/
-    @Test
-    public void testEncode() throws NullPointerException, IOException, BadAttributeValueException {
-        Result r = new Result(new byte[] {1,2,3,4}, 123509, "sir");
-        byte[] bytes;
-        MessageOutput out = new MessageOutput(new ByteArrayOutputStream());
-        r.encode(out);
-        out.toByteArray();
-        assertArrayEquals(new byte[] {1, 2, 3, 4, 0, 0, 1, -91, 0, 0, 0, 4, 115, 105, 114}, bytes);
-    }
 }
