@@ -12,52 +12,60 @@ import java.lang.Object;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-public class Result extends Object{
+public class Result extends Object {
     private byte[] fileID;
     private long fileSize;
     private String fileName;
     public Result(MessageInput in) throws IOException,
             BadAttributeValueException {
+        try{
         if (in == null) {
             throw new IOException("in is null");
         }
-        if (in.getIn().available() < 9) {
-            throw new IOException("Not Big Enough");
+        byte[] wholeByte = in.readAllBytes();
+        for (byte b : wholeByte) {
+            if (b < 0) {
+                throw new IOException("Invalid Bytes");
+            }
+            System.out.print(b + ", ");
         }
-        try {
-            byte[] wholeByte = in.readAllBytes();
-            int off = 0;
-            int len = 4;
-            byte[] fileID = new byte[len];
-            System.arraycopy(wholeByte, off, fileID, 0, len);
-            setFileID(fileID);
-            off += len;
-            byte[] fileSize = new byte[len];
-            System.arraycopy(wholeByte, off, fileSize, 0, len);
-            setFileSize(byteToUnsignedInt(fileSize));
-            off += len;
-            StringBuilder fileName = new StringBuilder();
-            while (off < wholeByte.length) {
-                //System.out.println((char) wholeByte[off]);
-                if ((char) wholeByte[off] == '\n') {
-                    break;
-                }
-                fileName.append((char) wholeByte[off]);
-                off++;
-                if (off == wholeByte.length) {
-                    throw new IOException("No new line");
-                }
+        System.out.print("\n");
+        int off = 0;
+        byte[] fileID = new byte[4];
+        System.arraycopy(wholeByte, off, fileID, 0, 4);
+        setFileID(fileID);
+        off += 4;
+        byte[] fileSize = new byte[4];
+        System.arraycopy(wholeByte, off, fileSize, 0, 4);
+        setFileSize(byteToUnsignedInt(fileSize));
+        off += 4;
+        StringBuilder fileName = new StringBuilder();
+        System.out.println("off: " + off + " " + " length: " + wholeByte.length);
+        while (off < wholeByte.length) {
+            //System.out.println((char) wholeByte[off]);
+            if ((char) wholeByte[off] == '\n') {
+                //System.out.println("found new line");
+                break;
             }
-            if (fileName.isEmpty()) {
-                throw new IOException("No FileName");
+            System.out.println("off: " + off + " " + (char) wholeByte[off]);
+            fileName.append((char) wholeByte[off]);
+            off++;
+            if (off == wholeByte.length) {
+                throw new BadAttributeValueException("No new line", "fileName");
             }
-            setFileName(fileName.toString());
-        } catch(Exception e) {
-            if (!e.getMessage().isEmpty()) {
-                throw new IOException(e.getMessage());
-            }
-            throw new IOException("Invalid Bytes");
         }
+        if (fileName.isEmpty()) {
+            throw new BadAttributeValueException("No FileName", "fileName");
+        }
+        //System.out.println("made it through no issue");
+        setFileName(fileName.toString());
+    } catch(Exception e) {
+        e.printStackTrace();
+        if (!e.getMessage().isEmpty()) {
+            throw new IOException(e.getMessage());
+        }
+        throw new IOException("Invalid Bytes");
+    }
     }
 
     public Result(byte[] fileID, long fileSize, String fileName)
@@ -80,19 +88,26 @@ public class Result extends Object{
             out.getOut().write('\n');
         }
         catch (Exception E) {
-            throw new IOException("Bad write");
+            if (E.getMessage() != null) {
+                throw new IOException(E.getMessage());
+            }
+            
         }
         //write file information into output stream
     }
     @Override
     public String toString() {
         String fileID = "";
-        for (byte b : this.fileID) {
-            fileID += b;
+        
+        return "Result: FileID=" + printBytesInHex(getFileID()) + "FileSize=" + getFileSize() + "bytes FileName=" + getFileName();
+
+    }
+    private String printBytesInHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02X", b));
         }
-        return "Result{" + "fileID=" + fileID + ", fileSize=" + fileSize +
-                ", fileName=" + fileName +
-                '}';
+        return sb.toString();
     }
     public byte[] getFileID() {
         return fileID;
@@ -101,6 +116,9 @@ public class Result extends Object{
         //check to see if fileID isn't empty
         if (i == null) {
             throw new BadAttributeValueException("fileID is null", "fileID");
+        }
+        if (i.length != 4) {
+            throw new BadAttributeValueException("fileID is too big", "fileID");
         }
         //if filled with something valid, set fileID to parameter
         this.fileID = i;
@@ -115,6 +133,10 @@ public class Result extends Object{
             throw
             new BadAttributeValueException
             ("fileSize is negative", "fileSize");
+        }
+        if (fileSize > 0xFFFFFFFFL) {
+            throw new BadAttributeValueException
+            ("fileSize is too large", "fileSize");
         }
         //check to see if fileSize is valid
         //if filled with something valid, set filesize to parameter
@@ -172,5 +194,25 @@ public class Result extends Object{
         bytes[2] = (byte) (fileSize >> 8);
         bytes[3] = (byte) (fileSize);
         return bytes;
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Result)) {
+            return false;
+        }
+        Result r = (Result) o;
+        return r.getFileID().equals(this.getFileID()) && r.getFileSize() == this.getFileSize() && r.getFileName().equals(this.getFileName());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + fileID.hashCode();
+        result = 31 * result + (int) (fileSize ^ (fileSize >>> 32));
+        result = 31 * result + fileName.hashCode();
+        return result;
     }
 }

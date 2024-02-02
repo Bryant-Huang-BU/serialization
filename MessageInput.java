@@ -8,17 +8,18 @@
 
 package serialization;
 
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.Object;
 public class MessageInput extends Object {
-    private InputStream in;
+    private DataInputStream in;
     public MessageInput(InputStream in) throws NullPointerException { 
         //constructor
             if (in == null) { //check to see if in is null
                 throw new NullPointerException("in is null"); //throw exception
             }
-            this.in = in; //set in to in
+            this.in = new DataInputStream(in); //set in to new DataInputStream
     }
 
     public InputStream getIn() { //getter
@@ -40,8 +41,10 @@ public class MessageInput extends Object {
     public byte[] readAllBytes() throws IOException {
         try {
             byte[] bytes = new byte[in.available()];
-            in.read(bytes);
+            in.readFully(bytes);
             return bytes;
+        } catch (IOException e) {
+            throw new IOException("Bad Read Function");
         }
         catch (Exception E) {
             throw new IOException("Invalid Bytes");
