@@ -1,10 +1,14 @@
-/*
- * Name: Bryant Huang
- * Project 0
- */
+/************************************************
+*
+* Author: Bryant Huang
+* Assignment: Program 0
+* Class: CSI4321
+*
+************************************************/
+
 package serialization;
-import java.io.*;
-import java.lang.*;
+import java.io.IOException;
+import java.lang.Object;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -34,7 +38,7 @@ public class Result extends Object{
             off += len;
             StringBuilder fileName = new StringBuilder();
             while (off < wholeByte.length) {
-                System.out.println((char) wholeByte[off]);
+                //System.out.println((char) wholeByte[off]);
                 if ((char) wholeByte[off] == '\n') {
                     break;
                 }
@@ -48,8 +52,11 @@ public class Result extends Object{
                 throw new IOException("No FileName");
             }
             setFileName(fileName.toString());
-        } catch() {
-
+        } catch(Exception e) {
+            if (!e.getMessage().isEmpty()) {
+                throw new IOException(e.getMessage());
+            }
+            throw new IOException("Invalid Bytes");
         }
     }
 
@@ -68,12 +75,12 @@ public class Result extends Object{
         try {
             out.getOut().write(fileID, 0, 4);
             out.getOut().write(longToBytes(), 0, 4);
-            out.getOut().write(fileName.getBytes(StandardCharsets.UTF_8),
-        0, fileName.length());
+            out.getOut().write(fileName.getBytes(StandardCharsets.UTF_8),0, 
+            fileName.length());
             out.getOut().write('\n');
         }
         catch (Exception E) {
-            throw new IOException("Bad write");3
+            throw new IOException("Bad write");
         }
         //write file information into output stream
     }
@@ -106,7 +113,8 @@ public class Result extends Object{
         throws BadAttributeValueException {
         if (fileSize < 0) {
             throw
-            new BadAttributeValueException("fileSize is negative", "fileSize");
+            new BadAttributeValueException
+            ("fileSize is negative", "fileSize");
         }
         //check to see if fileSize is valid
         //if filled with something valid, set filesize to parameter
@@ -118,10 +126,14 @@ public class Result extends Object{
     }
     public final Result setFileName(String fileName)
         throws BadAttributeValueException {
-        //check to see if fileSize is valid
+        //check to see if fileSize exists
         if (fileName == null) {
             throw
             new BadAttributeValueException("fileName is null", "fileName");
+        }
+        if (!fileName.matches("^[a-zA-Z0-9._-]+$")) { //regex for valid filename
+            throw new BadAttributeValueException(
+            "fileName is invalid", "fileName");
         }
         //if filled with something valid, set filesize to parameter
         this.fileName = fileName;
@@ -143,6 +155,8 @@ public class Result extends Object{
             throw new NullPointerException("byte array is null");
         }
         long result = ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL;
+        // basically convert the byte array to an long, 
+        // but it is removed of sign
         // Convert to unsigned long
         //System.out.println(result);
         return result;

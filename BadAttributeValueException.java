@@ -1,13 +1,16 @@
-/*
- * Name: Bryant Huang
- * Project 0
- */
+/************************************************
+*
+* Author: Bryant Huang
+* Assignment: Program 0
+* Class: CSI4321
+*
+************************************************/
+
 package serialization;
-import java.io.Serializable;
-import java.lang.*;
-public class BadAttributeValueException extends Exception implements Serializable {
+public class BadAttributeValueException extends Exception {
     private String attribute;
-    public BadAttributeValueException(String message, String attribute) throws NullPointerException {
+    public BadAttributeValueException(String message, String attribute) 
+    throws NullPointerException {
         super(message);
         try {
             if (message == null || attribute == null) {
@@ -18,10 +21,13 @@ public class BadAttributeValueException extends Exception implements Serializabl
         } catch (NullPointerException e) {
             throw new NullPointerException("message or attribute is null");
         }
+    }
     public String getAttribute() {
         return this.attribute;
     }
-    public BadAttributeValueException(String message, String attribute, Throwable cause) throws NullPointerException {
+    public BadAttributeValueException
+    (String message, String attribute, Throwable cause) 
+    throws NullPointerException {
         super(message, cause);
         try {
             if (message == null || attribute == null || cause == null) {
@@ -30,7 +36,8 @@ public class BadAttributeValueException extends Exception implements Serializabl
             //construct object
             this.attribute = attribute;
         } catch (NullPointerException e) {
-            throw new NullPointerException("message, attribute, or cause is null");
+            throw new NullPointerException
+            ("message, attribute, or cause is null");
         }
     }  
 }

@@ -1,7 +1,10 @@
-/*
- * Name: Bryant Huang
- * Project 0
- */
+/************************************************
+*
+* Author: Bryant Huang
+* Assignment: Program 0
+* Class: CSI4321
+*
+************************************************/
 
 package serialization;
 
@@ -21,7 +24,7 @@ public class MessageInput extends Object {
     public InputStream getIn() { //getter
         try {
             return in; //return in
-        } catch (Exception E) {
+        } catch (Exception E) { //the just in case
             throw new NullPointerException("in is null"); //throw exception
         }
     }
@@ -29,7 +32,7 @@ public class MessageInput extends Object {
         if (off < 0 || len < 0 || off + len > in.available()) {
             throw new IndexOutOfBoundsException
             ("Offset or length are out of bounds");
-        }
+        } //input sanitization
         byte[] bytes = new byte[len];
         in.read(bytes, off, len);
         return bytes;

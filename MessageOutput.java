@@ -1,7 +1,10 @@
-/*
- * Name: Bryant Huang
- * Project 0
- */
+/************************************************
+*
+* Author: Bryant Huang
+* Assignment: Program 0
+* Class: CSI4321
+*
+************************************************/
 
 package serialization;
 import java.io.IOException;
@@ -32,23 +35,18 @@ public class MessageOutput extends Object{
     }
 
 
-    public void writeBytes(byte[] bytes) throws IOException {
+    public void writeBytes(byte[] bytes)
+     throws IOException, NullPointerException {
+        if (bytes == null) {
+            throw new NullPointerException("bytes is null");
+        }
+        if (bytes.length == 0) {
+            return;
+        }
         try {
-            if (bytes == null) {
-                throw new NullPointerException("bytes is null");
-            }
-            if (bytes.length == 0) {
-                return;
-            }
             out.write(bytes);
         } catch (IOException e) {
             throw new IOException("Bad Write Function");
         }
-
-    }
-
-    public void toByteArray() {
-        
-        throw new UnsupportedOperationException("Unimplemented method 'toByteArray'");
     }
 }
