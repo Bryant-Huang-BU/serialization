@@ -6,7 +6,7 @@
 *
 ************************************************/
 
-package serialization;
+package klab.serialization;
 public class BadAttributeValueException extends Exception {
     private String attribute;
     public BadAttributeValueException(String message, String attribute) 

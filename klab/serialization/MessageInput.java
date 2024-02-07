@@ -6,8 +6,9 @@
 *
 ************************************************/
 
-package serialization;
+package klab.serialization;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,9 +41,13 @@ public class MessageInput extends Object {
     }
     public byte[] readAllBytes() throws IOException {
         try {
-            byte[] bytes = new byte[in.available()];
-            in.readFully(bytes);
-            return bytes;
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            return outputStream.toByteArray();
         } catch (IOException e) {
             throw new IOException("Bad Read Function");
         }

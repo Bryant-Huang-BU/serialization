@@ -6,7 +6,7 @@
 *
 ************************************************/
 
-package serialization;
+package klab.serialization;
 import java.io.IOException;
 import java.lang.Object;
 import java.nio.ByteBuffer;
@@ -27,9 +27,9 @@ public class Result extends Object {
             if (b < 0) {
                 throw new IOException("Invalid Bytes");
             }
-            System.out.print(b + ", ");
+            //System.out.print(b + ", ");
         }
-        System.out.print("\n");
+        //System.out.print("\n");
         int off = 0;
         byte[] fileID = new byte[4];
         System.arraycopy(wholeByte, off, fileID, 0, 4);
@@ -40,14 +40,14 @@ public class Result extends Object {
         setFileSize(byteToUnsignedInt(fileSize));
         off += 4;
         StringBuilder fileName = new StringBuilder();
-        System.out.println("off: " + off + " " + " length: " + wholeByte.length);
+        //System.out.println("off: " + off + " " + " length: " + wholeByte.length);
         while (off < wholeByte.length) {
             //System.out.println((char) wholeByte[off]);
             if ((char) wholeByte[off] == '\n') {
                 //System.out.println("found new line");
                 break;
             }
-            System.out.println("off: " + off + " " + (char) wholeByte[off]);
+            //System.out.println("off: " + off + " " + (char) wholeByte[off]);
             fileName.append((char) wholeByte[off]);
             off++;
             if (off == wholeByte.length) {
