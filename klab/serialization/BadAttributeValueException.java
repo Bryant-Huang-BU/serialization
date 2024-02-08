@@ -30,7 +30,7 @@ public class BadAttributeValueException extends Exception {
     throws NullPointerException {
         super(message, cause);
         try {
-            if (message == null || attribute == null || cause == null) {
+            if (message == null || attribute == null) {
                 throw new NullPointerException();
             }
             //construct object

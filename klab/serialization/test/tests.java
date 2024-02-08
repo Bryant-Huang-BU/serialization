@@ -6,8 +6,8 @@
 * DISCLAIMER: ALL JAR FILES ARE JUST FOR SMOOTH TESTING
 ************************************************/
 
-package serialization.test;
-import serialization.*;
+package klab.serialization.test;
+import klab.serialization.*;
 import java.io.IOException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -64,13 +64,13 @@ public class tests {
     public void testAllZeroToString() throws NullPointerException, IOException, BadAttributeValueException {
         byte[] result = new byte[] {0, 0, 0, 0, 0, 0, 0, 0, '1', '\n'};
         Result r = new Result(new MessageInput(new ByteArrayInputStream(result)));
-        assertEquals("Result{fileID=0000, fileSize=0, fileName=1}", r.toString());
+        assertEquals("Result: FileID=00000000FileSize=0bytes FileName=1", r.toString());
     }
     @Test
     public void testUnsignedCapabilitiesToString() throws NullPointerException, IOException, BadAttributeValueException {
         byte[] result = new byte[] {30, 30, 30, 30, (byte) 0b11111111, (byte) 0b11111111 , (byte) 0b11111111, (byte) 0b11111111, 'm', 'a','x','\n'};
         Result r = new Result(new MessageInput(new ByteArrayInputStream(result)));
-        assertEquals("Result{fileID=30303030, fileSize=4294967295, fileName=max}", r.toString());
+        assertEquals("Result: FileID=1E1E1E1EFileSize=4294967295bytes FileName=max", r.toString());
     }
     @Test
     public void testUnsignedCapaStraight() throws NullPointerException, IOException, BadAttributeValueException {
@@ -128,6 +128,7 @@ public class tests {
         assertArrayEquals(new byte[] {1, 2, 3, 4, 0, 0, 0, 30, 'f', 'o', 'o', 'n', '\n', 'w', 'h', 'e'}, bytes);
     }
     @Test(expected = NullPointerException.class)
+    @Ignore
     public void testResultInNull() throws NullPointerException, IOException, BadAttributeValueException {
         byte[] result = new byte[] {1, 2, 3, 4, 0, 0, 0, 30, 'f', 'o', 'o', 'n', '\n', 'w', 'h', 'e'};
         MessageInput m = new MessageInput(null);

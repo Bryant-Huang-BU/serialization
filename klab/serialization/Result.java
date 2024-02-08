@@ -22,43 +22,28 @@ public class Result extends Object {
         if (in == null) {
             throw new IOException("in is null");
         }
-        byte[] wholeByte = in.readAllBytes();
-        for (byte b : wholeByte) {
-            if (b < 0) {
-                throw new IOException("Invalid Bytes");
-            }
-            //System.out.print(b + ", ");
-        }
-        //System.out.print("\n");
+        //byte[] bytes = in.readAllBytes();
+        /*for (int i = 0; i < bytes.length; i++) {
+            System.out.println(bytes[i]);
+        }*/
         int off = 0;
-        byte[] fileID = new byte[4];
-        System.arraycopy(wholeByte, off, fileID, 0, 4);
-        setFileID(fileID);
-        off += 4;
-        byte[] fileSize = new byte[4];
-        System.arraycopy(wholeByte, off, fileSize, 0, 4);
-        setFileSize(byteToUnsignedInt(fileSize));
-        off += 4;
-        StringBuilder fileName = new StringBuilder();
-        //System.out.println("off: " + off + " " + " length: " + wholeByte.length);
-        while (off < wholeByte.length) {
-            //System.out.println((char) wholeByte[off]);
-            if ((char) wholeByte[off] == '\n') {
-                //System.out.println("found new line");
-                break;
-            }
-            //System.out.println("off: " + off + " " + (char) wholeByte[off]);
-            fileName.append((char) wholeByte[off]);
-            off++;
-            if (off == wholeByte.length) {
-                throw new BadAttributeValueException("No new line", "fileName");
-            }
-        }
-        if (fileName.isEmpty()) {
-            throw new BadAttributeValueException("No FileName", "fileName");
+        //get starting 4 bytes of byte array
+        byte[] buf = in.readFourBytes();
+        setFileID(buf);
+        //buf = getFileID();
+        /*for (int i = 0; i < 4; i++) {
+            System.out.println(buf[i]);
+        }*/
+        //get next 4 bytes of byte array
+        setFileSize(in.readUnsignedInt());
+        //System.out.println(bytes.length);
+        String x = in.readString();
+        //System.out.println(x);
+        setFileName(x);
+        if (this.fileName == null) {
+            throw new IOException("Invalid Bytes");
         }
         //System.out.println("made it through no issue");
-        setFileName(fileName.toString());
     } catch(Exception e) {
         e.printStackTrace();
         if (!e.getMessage().isEmpty()) {
@@ -66,7 +51,7 @@ public class Result extends Object {
         }
         throw new IOException("Invalid Bytes");
     }
-    }
+}
 
     public Result(byte[] fileID, long fileSize, String fileName)
         throws BadAttributeValueException {
@@ -110,6 +95,9 @@ public class Result extends Object {
         return sb.toString();
     }
     public byte[] getFileID() {
+        /*for (int i = 0; i < fileID.length; i++) {
+          System.out.println(fileID[i]);
+        }*/
         return fileID;
     }
     public final Result setFileID(byte[] i) throws BadAttributeValueException {
@@ -121,6 +109,9 @@ public class Result extends Object {
             throw new BadAttributeValueException("fileID is too big", "fileID");
         }
         //if filled with something valid, set fileID to parameter
+        /*for (int j = 0; j < i.length; j++) {
+            System.out.println(i[j]);
+        }*/
         this.fileID = i;
         return this;
     }
@@ -173,14 +164,11 @@ public class Result extends Object {
     }*/
 
     private long byteToUnsignedInt(byte[] bytes) throws NullPointerException {
-        if (bytes == null) {
-            throw new NullPointerException("byte array is null");
-        }
         long result = ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL;
-        // basically convert the byte array to an long, 
-        // but it is removed of sign
-        // Convert to unsigned long
-        //System.out.println(result);
+            // basically convert the byte array to an long, 
+            // but it is removed of sign
+            // Convert to unsigned long
+            //System.out.println(result);
         return result;
     }
     private byte[] longToBytes () {

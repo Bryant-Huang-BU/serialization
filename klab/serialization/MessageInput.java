@@ -13,6 +13,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.Object;
+import java.nio.ByteBuffer;
 public class MessageInput extends Object {
     private DataInputStream in;
     public MessageInput(InputStream in) throws NullPointerException { 
@@ -39,20 +40,65 @@ public class MessageInput extends Object {
         in.read(bytes, off, len);
         return bytes;
     }
-    public byte[] readAllBytes() throws IOException {
+
+    public long readUnsignedInt() throws NullPointerException{
         try {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = in.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
-            return outputStream.toByteArray();
+            byte[] bytes = new byte[4];
+            in.readNBytes(bytes, 0, 4);
+            long result = ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL;
+            // basically convert the byte array to an long, 
+            // but it is removed of sign
+            // Convert to unsigned long
+            //System.out.println(result);
+            return result;
         } catch (IOException e) {
-            throw new IOException("Bad Read Function");
+            throw new NullPointerException("Invalid Bytes");
         }
-        catch (Exception E) {
+    }
+
+    public byte[] readFourBytes() throws IOException {
+        try {
+            byte[] bytes = new byte[4];
+            in.readNBytes(bytes, 0, 4);
+            return bytes;
+        } catch (IOException e) {
             throw new IOException("Invalid Bytes");
+        }
+    }
+
+    public byte readByte() throws IOException {
+        try {
+            return in.readByte();
+        } catch (IOException e) {
+            throw new IOException("Invalid Bytes");
+        }
+    }
+
+    public String readString() throws IOException {
+        try {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            int readBytes;
+            boolean flag = false;
+            while ((readBytes = in.read()) != -1) {
+                if ((char) readBytes == '\n') {
+                    flag = true;
+                    break;
+                }
+                bytes.write(readBytes);
+            }
+            if (bytes.size() == 0) {
+                throw new IOException("No bytes to read");
+            }
+            if (bytes.toByteArray()[bytes.size() - 1] == -1) {
+                throw new IOException("Premature EOS");
+            }
+            if (!flag) {
+                throw new IOException("No newline");
+            }
+            return bytes.toString();
+            
+        } catch (IOException e) {
+            throw new IOException(e.getMessage());
         }
     }
 }

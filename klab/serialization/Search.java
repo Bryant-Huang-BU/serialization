@@ -3,7 +3,7 @@ public class Search extends Message {
     String searchString;
     RoutingService routingService;
     int ttl;
-    bytep[] msgID;
+    byte[] msgID;
 
     public Search(byte[] msgID, int ttl, RoutingService routingService, String searchString) {
         this.searchString = searchString;
