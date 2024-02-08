@@ -14,8 +14,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.Object;
 import java.nio.ByteBuffer;
+/**
+ * The MessageInput class represents an input stream for reading messages.
+ * It provides methods for reading bytes, unsigned integers, four bytes, bytes, and strings.
+ */
 public class MessageInput extends Object {
-    private DataInputStream in;
+    private DataInputStream in; 
+    /**
+     * Constructs a new MessageInput object with the specified input stream.
+     * 
+     * @param in the input stream to read messages from
+     * @throws NullPointerException if the input stream is null
+     */
     public MessageInput(InputStream in) throws NullPointerException { 
         //constructor
             if (in == null) { //check to see if in is null
@@ -24,13 +34,15 @@ public class MessageInput extends Object {
             this.in = new DataInputStream(in); //set in to new DataInputStream
     }
 
-    public InputStream getIn() { //getter
-        try {
-            return in; //return in
-        } catch (Exception E) { //the just in case
-            throw new NullPointerException("in is null"); //throw exception
-        }
-    }
+    /**
+     * Reads a specified number of bytes from the input stream starting at the given offset.
+     * 
+     * @param off the starting offset in the input stream
+     * @param len the number of bytes to read
+     * @return an array of bytes containing the read data
+     * @throws IOException if an I/O error occurs
+     * @throws IndexOutOfBoundsException if the offset or length are out of bounds
+     */
     public byte[] readBytes(int off, int len) throws IOException {
         if (off < 0 || len < 0 || off + len > in.available()) {
             throw new IndexOutOfBoundsException
@@ -41,6 +53,12 @@ public class MessageInput extends Object {
         return bytes;
     }
 
+    /**
+     * Reads an unsigned integer from the input stream.
+     * 
+     * @return the unsigned integer value read from the input stream
+     * @throws NullPointerException if there are invalid bytes or an I/O error occurs
+     */
     public long readUnsignedInt() throws NullPointerException{
         try {
             byte[] bytes = new byte[4];
@@ -56,6 +74,12 @@ public class MessageInput extends Object {
         }
     }
 
+    /**
+     * Reads four bytes from the input stream.
+     *
+     * @return an array of four bytes read from the input stream.
+     * @throws IOException if an I/O error occurs.
+     */
     public byte[] readFourBytes() throws IOException {
         try {
             byte[] bytes = new byte[4];
@@ -66,6 +90,12 @@ public class MessageInput extends Object {
         }
     }
 
+    /**
+     * Reads a byte from the input stream.
+     *
+     * @return the byte read from the input stream
+     * @throws IOException if an I/O error occurs while reading the byte
+     */
     public byte readByte() throws IOException {
         try {
             return in.readByte();
@@ -74,6 +104,12 @@ public class MessageInput extends Object {
         }
     }
 
+    /**
+     * Reads a string from the input stream.
+     *
+     * @return the string read from the input stream
+     * @throws IOException if an I/O error occurs
+     */
     public String readString() throws IOException {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();

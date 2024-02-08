@@ -12,29 +12,31 @@ import java.io.OutputStream;
 import java.lang.Object;
 public class MessageOutput extends Object{
     private OutputStream out;
-    public MessageOutput(OutputStream out) throws NullPointerException {
-        try {
-            if (out == null) {
-                throw new NullPointerException("out is null");
+        
+        /**
+         * Constructs a new MessageOutput object with the specified output stream.
+         * 
+         * @param out the output stream to write messages to
+         * @throws NullPointerException if the output stream is null
+         */
+        public MessageOutput(OutputStream out) throws NullPointerException {
+            try {
+                if (out == null) {
+                    throw new NullPointerException("out is null");
+                }
+                this.out = out;
+            } catch (NullPointerException e) {
+                throw new NullPointerException("out is null");    
             }
-            this.out = out;
-        } catch (NullPointerException e) {
-            throw new NullPointerException("out is null");    
         }
-    }
-    
-    public OutputStream getOut() {
-        try {
-            if (out == null) {
-                throw new NullPointerException("out is null");
-            }
-            return out;
-        } catch (Exception e) {
-            throw new NullPointerException("out is null");
-        }
-    }
 
-
+    /**
+     * Writes the specified byte array to the output stream.
+     * 
+     * @param bytes the byte array to be written
+     * @throws IOException if an I/O error occurs
+     * @throws NullPointerException if the byte array is null
+     */
     public void writeBytes(byte[] bytes)
      throws IOException, NullPointerException {
         if (bytes == null) {

@@ -20,7 +20,6 @@ public class Search extends Message {
     }
 
     public String toString() {
-        String fileID = "";
         return "Search: ID=" + msgID + " TTL=" + ttl + " Routing=" + routingService.getCode() + " Search=" + searchString;
     }
     public Search setSearchString(String searchString)

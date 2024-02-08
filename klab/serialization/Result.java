@@ -9,13 +9,21 @@
 package klab.serialization;
 import java.io.IOException;
 import java.lang.Object;
-import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
 public class Result extends Object {
     private byte[] fileID;
     private long fileSize;
     private String fileName;
+    /**
+     * Represents a Result object that is used for serialization.
+     * This class is responsible for reading and initializing the object
+     * from a MessageInput stream.
+     *
+     * @param in The MessageInput stream to read from.
+     * @throws IOException If an I/O error occurs while reading from the stream.
+     * @throws BadAttributeValueException If the attribute value is invalid.
+     */
     public Result(MessageInput in) throws IOException,
             BadAttributeValueException {
         try{
@@ -53,6 +61,14 @@ public class Result extends Object {
     }
 }
 
+    /**
+     * Represents a result object that stores file information.
+     * 
+     * @param fileID the file ID
+     * @param fileSize the size of the file
+     * @param fileName the name of the file
+     * @throws BadAttributeValueException
+     */
     public Result(byte[] fileID, long fileSize, String fileName)
         throws BadAttributeValueException {
         setFileID(fileID);
@@ -64,13 +80,18 @@ public class Result extends Object {
         //sort into binary,  store into object
 
     }
+    /**
+     * Encodes the file information and writes it into the output stream.
+     * 
+     * @param out the output stream to write the encoded file information to
+     * @throws IOException if an I/O error occurs while writing to the output stream
+     */
     public void encode(MessageOutput out) throws IOException {
         try {
-            out.getOut().write(fileID, 0, 4);
-            out.getOut().write(longToBytes(), 0, 4);
-            out.getOut().write(fileName.getBytes(StandardCharsets.UTF_8),0, 
-            fileName.length());
-            out.getOut().write('\n');
+            out.writeBytes(fileID);
+            out.writeBytes(longToBytes());
+            out.writeBytes(fileName.getBytes(StandardCharsets.US_ASCII));
+            out.writeBytes("\n".getBytes());
         }
         catch (Exception E) {
             if (E.getMessage() != null) {
@@ -80,10 +101,14 @@ public class Result extends Object {
         }
         //write file information into output stream
     }
+    /**
+     * Returns a string representation of the Result object.
+     * The string includes the FileID in hexadecimal format, the FileSize in bytes, and the FileName.
+     *
+     * @return a string representation of the Result object.
+     */
     @Override
     public String toString() {
-        String fileID = "";
-        
         return "Result: FileID=" + printBytesInHex(getFileID()) + "FileSize=" + getFileSize() + "bytes FileName=" + getFileName();
 
     }
@@ -94,12 +119,24 @@ public class Result extends Object {
         }
         return sb.toString();
     }
+    /**
+     * Returns the file ID associated with this Result.
+     *
+     * @return the file ID as a byte array
+     */
     public byte[] getFileID() {
         /*for (int i = 0; i < fileID.length; i++) {
           System.out.println(fileID[i]);
         }*/
         return fileID;
     }
+    /**
+     * Sets the file ID.
+     * 
+     * @param i the file ID to set
+     * @return the updated Result object
+     * @throws BadAttributeValueException if the file ID is null or too big
+    */
     public final Result setFileID(byte[] i) throws BadAttributeValueException {
         //check to see if fileID isn't empty
         if (i == null) {
@@ -115,9 +152,21 @@ public class Result extends Object {
         this.fileID = i;
         return this;
     }
+    /**
+     * Returns the size of the file.
+     *
+     * @return the size of the file
+     */
     public long getFileSize() {
         return fileSize;
     }
+    /**
+     * Sets the file size for the result.
+     * 
+     * @param fileSize the file size to be set
+     * @return the updated Result object
+     * @throws BadAttributeValueException if the file name is null or invalid
+     */
     public final Result setFileSize(long fileSize)
         throws BadAttributeValueException {
         if (fileSize < 0) {
@@ -134,9 +183,22 @@ public class Result extends Object {
         this.fileSize = fileSize;
         return this;
     }
+    /**
+     * Returns the file name associated with this Result.
+     *
+     * @return the file name
+     */
     public String getFileName() {
         return fileName;
     }
+        
+    /**
+     * Sets the file name for the result.
+     * 
+     * @param fileName the file name to be set
+     * @return the updated Result object
+     * @throws BadAttributeValueException if the file name is null or invalid
+     */
     public final Result setFileName(String fileName)
         throws BadAttributeValueException {
         //check to see if fileSize exists
@@ -162,15 +224,12 @@ public class Result extends Object {
         }
         return result;
     }*/
-
-    private long byteToUnsignedInt(byte[] bytes) throws NullPointerException {
-        long result = ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL;
-            // basically convert the byte array to an long, 
-            // but it is removed of sign
-            // Convert to unsigned long
-            //System.out.println(result);
-        return result;
-    }
+    /**
+     * Converts the fileSize to a byte array representation.
+     * Throws an IllegalArgumentException if the fileSize is out of range for uint32.
+     * 
+     * @return The byte array representation of the fileSize.
+     */
     private byte[] longToBytes () {
         if (fileSize < 0 || fileSize > 0xFFFFFFFFL) {
             throw new IllegalArgumentException
@@ -183,6 +242,12 @@ public class Result extends Object {
         bytes[3] = (byte) (fileSize);
         return bytes;
     }
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     * 
+     * @param o the reference object with which to compare.
+     * @return {@code true} if this object is the same as the {@code o} argument; {@code false} otherwise.
+     */
     @Override
     public boolean equals(Object o) {
         if (o == this) {
@@ -195,6 +260,12 @@ public class Result extends Object {
         return r.getFileID().equals(this.getFileID()) && r.getFileSize() == this.getFileSize() && r.getFileName().equals(this.getFileName());
     }
 
+    /**
+        * Returns the hash code value for this Result object.
+        * The hash code is calculated based on the fileID, fileSize, and fileName fields.
+        *
+        * @return the hash code value for this Result object
+        */
     @Override
     public int hashCode() {
         int result = 17;

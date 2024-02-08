@@ -3,7 +3,7 @@ import java.net.InetSocketAddress;
 import java.util.List;
 
 public class Response {
-    byte [] msgID;
+    byte[] msgID;
     int ttl;
     RoutingService routingService;
     InetSocketAddress responseHost;
@@ -35,10 +35,6 @@ public class Response {
         return routingService;
     }
 
-    public String toString() {
-        return "Response: ID=" + msgID + " TTL=" + ttl + " Routing=" + " ResponseHost=" + responseHost;
-    }
-
     public void setMsgID(byte[] msgID) throws BadAttributeValueException {
         try {
             if (msgID == null) {
@@ -58,7 +54,7 @@ public class Response {
             this.ttl = ttl;
             return this;
         } catch (BadAttributeValueException e) {
-            throw new BadAttributeValueException("ttl is less than 0", "ttl");
+            throw new BadAttributeValueException(e.getMessage(), "ttl");
         }
     }
 
@@ -67,20 +63,6 @@ public class Response {
         return this;
     }
 
-
-
-    public Response setResponseHost(InetSocketAddress responseHost)
-        throws BadAttributeValueException 
-        try {
-            if (responseHost == null) {
-                throw new BadAttributeValueException("responseHost is null", "responseHost");
-            }
-            this.responseHost = responseHost;
-            return this;
-        } catch (BadAttributeValueException e) {
-            throw new BadAttributeValueException("responseHost is null", "responseHost");
-        }
-    }
     public String toString() {
         return "Response: ID=" + msgID + " TTL=" + ttl + " Routing=" + " ResponseHost=" + responseHost;
     }
@@ -90,7 +72,7 @@ public class Response {
     }
 
     public Response setResponseHost(InetSocketAddress responseHost)
-        throws BadAttributeValueException 
+        throws BadAttributeValueException {
         try {
             if (responseHost == null) {
                 throw new BadAttributeValueException("responseHost is null", "responseHost");
@@ -98,7 +80,7 @@ public class Response {
             this.responseHost = responseHost;
             return this;
         } catch (BadAttributeValueException e) {
-            throw new BadAttributeValueException("responseHost is null", "responseHost");
+            throw new BadAttributeValueException(e.getMessage(), "responseHost");
         }
     }
 
@@ -115,7 +97,7 @@ public class Response {
             this.resultList = resultList;
             return this;
         } catch (BadAttributeValueException e) {
-            throw new BadAttributeValueException("resultList is null", "resultList");
+            throw new BadAttributeValueException(e.getMessage(), "resultList");
         }
     }
 }
