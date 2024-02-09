@@ -1,6 +1,8 @@
 package klab.serialization;
 
 import java.lang.constant.ClassDesc;
+import java.util.Arrays;
+import java.util.Comparator;
 
 public enum RoutingService{
     
@@ -8,20 +10,29 @@ public enum RoutingService{
 
     private int code;
 
+    /**
+     * Represents a routing service.
+     * @param code the code for the routing service
+     */
     private RoutingService(int code) {
         this.code = code;
     }
     
+    /**
+     * Returns the code associated with this RoutingService.
+     *
+     * @return the code
+     */
     public int getCode() {
         return code;
     }
 
-    public static RoutingService getRoutingService(int code) throws BadAttributeValueException {
-        if (code == 0) {
-            return BREADTHFIRST;
-        } else if (code == 1) {
-            return DEPTHFIRST;
-        }
-        throw new BadAttributeValueException("Invalid code", "code");
+    public static RoutingService getRoutingService(int code)
+    throws BadAttributeValueException {
+        return Arrays.stream(values())
+            .filter(r -> code == r.getCode())
+            .findFirst()
+            .orElseThrow(() -> 
+            new BadAttributeValueException("Invalid code", "code"));
     }
 }
