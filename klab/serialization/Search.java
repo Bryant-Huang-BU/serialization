@@ -6,6 +6,7 @@ public class Search extends Message {
     byte[] msgID;
 
     public Search(byte[] msgID, int ttl, RoutingService routingService, String searchString) throws BadAttributeValueException{
+        super(msgID, ttl, routingService); // Add this line to invoke the super class constructor
         this.searchString = searchString;
         this.routingService = routingService;
         this.ttl = ttl;
@@ -55,7 +56,7 @@ public class Search extends Message {
     public byte[] getMsgID() {
         return msgID;
     }
-
+    
     /**
      * @param msgID
      * @return

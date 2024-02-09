@@ -81,28 +81,14 @@ public class MessageInput extends Object {
      * @throws IOException if an I/O error occurs.
      */
     public byte[] readFourBytes() throws IOException {
-        try {
             byte[] bytes = new byte[4];
             in.readNBytes(bytes, 0, 4);
+            if (bytes.length != 4) {
+                throw new IOException("Invalid Bytes");
+            }
             return bytes;
-        } catch (IOException e) {
-            throw new IOException("Invalid Bytes");
-        }
     }
-
-    /**
-     * Reads a byte from the input stream.
-     *
-     * @return the byte read from the input stream
-     * @throws IOException if an I/O error occurs while reading the byte
-     */
-    public byte readByte() throws IOException {
-        try {
-            return in.readByte();
-        } catch (IOException e) {
-            throw new IOException("Invalid Bytes");
-        }
-    }
+    
 
     /**
      * Reads a string from the input stream.
@@ -110,7 +96,7 @@ public class MessageInput extends Object {
      * @return the string read from the input stream
      * @throws IOException if an I/O error occurs
      */
-    public String readString() throws IOException {
+    public byte[] readString() throws IOException {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             int readBytes;
@@ -120,18 +106,20 @@ public class MessageInput extends Object {
                     flag = true;
                     break;
                 }
-                bytes.write(readBytes);
+                bytes.write((char) readBytes);
+                //System.out.println((char) readBytes);
             }
             if (bytes.size() == 0) {
                 throw new IOException("No bytes to read");
             }
-            if (bytes.toByteArray()[bytes.size() - 1] == -1) {
+            /*if (bytes.toByteArray()[bytes.size() - 1] == -1) {
                 throw new IOException("Premature EOS");
-            }
+            }*/
             if (!flag) {
                 throw new IOException("No newline");
             }
-            return bytes.toString();
+            //System.out.println(bytes.toString());
+            return bytes.toByteArray();
             
         } catch (IOException e) {
             throw new IOException(e.getMessage());

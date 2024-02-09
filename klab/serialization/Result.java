@@ -45,7 +45,7 @@ public class Result extends Object {
         //get next 4 bytes of byte array
         setFileSize(in.readUnsignedInt());
         //System.out.println(bytes.length);
-        String x = in.readString();
+        String x = new String( in.readString(), StandardCharsets.US_ASCII);
         //System.out.println(x);
         setFileName(x);
         if (this.fileName == null) {
@@ -53,7 +53,7 @@ public class Result extends Object {
         }
         //System.out.println("made it through no issue");
     } catch(Exception e) {
-        e.printStackTrace();
+        //e.printStackTrace();
         if (!e.getMessage().isEmpty()) {
             throw new IOException(e.getMessage());
         }
@@ -91,7 +91,7 @@ public class Result extends Object {
             out.writeBytes(fileID);
             out.writeBytes(longToBytes());
             out.writeBytes(fileName.getBytes(StandardCharsets.US_ASCII));
-            out.writeBytes("\n".getBytes());
+            out.writeBytes("\n".getBytes(StandardCharsets.US_ASCII));
         }
         catch (Exception E) {
             if (E.getMessage() != null) {
@@ -203,12 +203,12 @@ public class Result extends Object {
         throws BadAttributeValueException {
         //check to see if fileSize exists
         if (fileName == null) {
-            throw
-            new BadAttributeValueException("fileName is null", "fileName");
+            throw new BadAttributeValueException("fileName is null", "fileName");
         }
-        if (!fileName.matches("^[a-zA-Z0-9._-]+$")) { //regex for valid filename
+        if (!fileName.matches("[a-zA-Z0-9._\\-]+")) { //regex for valid filename
             throw new BadAttributeValueException(
             "fileName is invalid", "fileName");
+            //System.out.println("fileName is invalid");
         }
         //if filled with something valid, set filesize to parameter
         this.fileName = fileName;

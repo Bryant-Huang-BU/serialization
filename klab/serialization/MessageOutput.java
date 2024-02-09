@@ -33,20 +33,20 @@ public class MessageOutput extends Object{
     /**
      * Writes the specified byte array to the output stream.
      * 
-     * @param bytes the byte array to be written
+     * @param msgID the byte array to be written
      * @throws IOException if an I/O error occurs
      * @throws NullPointerException if the byte array is null
      */
-    public void writeBytes(byte[] bytes)
+    public void writeBytes(byte[] msgID)
      throws IOException, NullPointerException {
-        if (bytes == null) {
+        if (msgID == null) {
             throw new NullPointerException("bytes is null");
         }
-        if (bytes.length == 0) {
+        if (msgID.length == 0) {
             return;
         }
         try {
-            out.write(bytes);
+            out.write(msgID);
         } catch (IOException e) {
             throw new IOException("Bad Write Function");
         }
