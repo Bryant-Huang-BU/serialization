@@ -45,7 +45,7 @@ public class Result extends Object {
         //get next 4 bytes of byte array
         setFileSize(in.readUnsignedInt());
         //System.out.println(bytes.length);
-        String x = new String( in.readString(), StandardCharsets.US_ASCII);
+        String x = new String( in.readString('\n'), StandardCharsets.US_ASCII);
         //System.out.println(x);
         setFileName(x);
         if (this.fileName == null) {
@@ -97,7 +97,7 @@ public class Result extends Object {
             if (E.getMessage() != null) {
                 throw new IOException(E.getMessage());
             }
-            
+            throw new IOException("Read went wrong");
         }
         //write file information into output stream
     }

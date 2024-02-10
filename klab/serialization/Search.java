@@ -7,9 +7,8 @@ public class Search extends Message {
 
     public Search(byte[] msgID, int ttl, RoutingService routingService, String searchString) throws BadAttributeValueException {
         super(msgID, ttl, routingService); // Add this line to invoke the super class constructor
-        this.searchString = searchString;
-        this.routingService = routingService;
-        this.ttl = ttl;
+        setType(0);
+        setSearchString(searchString);
         if (msgID.length != 15) {
             throw new BadAttributeValueException("msgID is not 15 bytes", "msgID");
         }
@@ -41,11 +40,11 @@ public class Search extends Message {
         return this;
     }
 
-    public int getTtl() {
+    public int getTTL() {
         return ttl;
     }
 
-    public Search setTtl(int ttl) throws BadAttributeValueException {
+    public Search setTTL(int ttl) throws BadAttributeValueException {
         if (ttl < 0) {
             throw new BadAttributeValueException("ttl is less than 0", "ttl");
         }
@@ -53,7 +52,7 @@ public class Search extends Message {
         return this;
     }
 
-    public byte[] getMsgID() {
+    public byte[] getID() {
         return msgID;
     }
     

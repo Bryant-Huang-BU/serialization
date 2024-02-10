@@ -43,13 +43,16 @@ public class MessageInput extends Object {
      * @throws IOException if an I/O error occurs
      * @throws IndexOutOfBoundsException if the offset or length are out of bounds
      */
-    public byte[] readBytes(int off, int len) throws IOException {
-        if (off < 0 || len < 0 || off + len > in.available()) {
-            throw new IndexOutOfBoundsException
-            ("Offset or length are out of bounds");
+    public byte[] readBytes(int len) throws IOException {
+        if (len < 0) {
+            throw new IOException("Length is less than 0");
         } //input sanitization
         byte[] bytes = new byte[len];
-        in.read(bytes, off, len);
+        in.readNBytes(bytes,0, len);
+        //System.out.println(len);
+        /*for (byte b : bytes) {
+            System.out.print(b);
+        }*/
         return bytes;
     }
 
@@ -96,13 +99,15 @@ public class MessageInput extends Object {
      * @return the string read from the input stream
      * @throws IOException if an I/O error occurs
      */
-    public byte[] readString() throws IOException {
+    
+     
+     public byte[] readString(char delim) throws IOException {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             int readBytes;
             boolean flag = false;
             while ((readBytes = in.read()) != -1) {
-                if ((char) readBytes == '\n') {
+                if ((char) readBytes == delim) {
                     flag = true;
                     break;
                 }
@@ -111,18 +116,33 @@ public class MessageInput extends Object {
             }
             if (bytes.size() == 0) {
                 throw new IOException("No bytes to read");
-            }
-            /*if (bytes.toByteArray()[bytes.size() - 1] == -1) {
-                throw new IOException("Premature EOS");
-            }*/
+            }  
             if (!flag) {
-                throw new IOException("No newline");
+                throw new IOException("No delimiter found");
             }
+            
             //System.out.println(bytes.toString());
             return bytes.toByteArray();
             
         } catch (IOException e) {
             throw new IOException(e.getMessage());
         }
+     }
+
+        public byte[] readStringWithSize(int size) throws IOException {
+            try {
+                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+                int readBytes;
+                while ((readBytes = in.read()) != -1 && bytes.size() < size) {
+                    bytes.write((char) readBytes);
+                    //System.out.println((char) readBytes);
+                }
+                
+                //System.out.println(bytes.toString());
+                return bytes.toByteArray();
+                
+            } catch (IOException e) {
+                throw new IOException(e.getMessage());
+            }
+        }
     }
-}

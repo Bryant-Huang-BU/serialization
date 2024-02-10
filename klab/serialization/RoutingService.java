@@ -29,6 +29,7 @@ public enum RoutingService{
 
     public static RoutingService getRoutingService(int code)
     throws BadAttributeValueException {
+        System.out.println(code);
         return Arrays.stream(values())
             .filter(r -> code == r.getCode())
             .findFirst()
