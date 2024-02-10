@@ -8,7 +8,7 @@ public class Message {
         private int ttl;
         private RoutingService routingService;
 
-        public Message(byte[] msgID, int ttl, RoutingService routingService) throws BadAttributeValueException {
+        public Message (byte[] msgID, int ttl, RoutingService routingService) throws BadAttributeValueException {
             setMsgID(msgID);
             setTtl(ttl);
             setRoutingService(routingService);
@@ -66,5 +66,11 @@ public class Message {
             return "Message: ID=" + msgID + " TTL=" + ttl + " Routing=" + routingService.getCode();
         }
 
+        public int getType() {
+            return this.type;
+        }
 
+        public void setType(int type) {
+            this.type = type;
+        }
 }

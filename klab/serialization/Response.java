@@ -2,7 +2,7 @@ package klab.serialization;
 import java.net.InetSocketAddress;
 import java.util.List;
 
-public class Response {
+public class Response extends Message {
     byte[] msgID;
     int ttl;
     RoutingService routingService;
@@ -10,6 +10,7 @@ public class Response {
     List<Result> resultList;
 
     Response(byte[] msgID, int ttl, RoutingService routingService, InetSocketAddress responseHost) throws BadAttributeValueException {
+        super(msgID, ttl, routingService);
         try {
             if (msgID == null || routingService == null || responseHost == null) {
                 throw new BadAttributeValueException("msgID, routingService, or responseHost is null", "msgID, routingService, responseHost");
@@ -19,7 +20,7 @@ public class Response {
             setRoutingService(routingService);
             setResponseHost(responseHost);
     } catch (BadAttributeValueException e) {
-        throw new BadAttributeValueException("msgID, routingService, or responseHost is null", "msgID, routingService, responseHost");
+        throw new BadAttributeValueException("msID, routingService, or responseHost is null", "msgID, routingService, responseHost");
     }
 }
     
@@ -35,12 +36,13 @@ public class Response {
         return routingService;
     }
 
-    public void setMsgID(byte[] msgID) throws BadAttributeValueException {
+    public Response setMsgID(byte[] msgID) throws BadAttributeValueException {
         try {
             if (msgID == null) {
                 throw new BadAttributeValueException("msgID is null", "msgID");
             }
             this.msgID = msgID;
+            return this;
         } catch (BadAttributeValueException e) {
             throw new BadAttributeValueException("msgID is null", "msgID");
         }
