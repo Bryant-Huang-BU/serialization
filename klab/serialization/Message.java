@@ -5,7 +5,11 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 public class Message {
         private int type;
@@ -64,6 +68,13 @@ public class Message {
                 Inet4Address address = (Inet4Address) Inet4Address.getByName(hostString);
                 Response response = new Response (msgID, ttl, RoutingService.getRoutingService(routingService), new InetSocketAddress(address, port));
                 response.setMatches(matches);
+                List<Result> resultsq = new ArrayList <Result>(matches);
+                for (int i = 0; i < matches; i++) {
+                    Result result = new Result(in);
+                    System.out.println(result.toString());
+                    resultsq.add(result);
+                }
+                response.setResultList(resultsq);
                 return response;
             }
             else {

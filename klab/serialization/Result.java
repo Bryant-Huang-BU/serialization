@@ -257,7 +257,13 @@ public class Result extends Object {
             return false;
         }
         Result r = (Result) o;
-        return r.getFileID().equals(this.getFileID()) && r.getFileSize() == this.getFileSize() && r.getFileName().equals(this.getFileName());
+        boolean flag = true;
+        for (int i = 0; i < fileID.length; i++) {
+            if (r.fileID[i] != fileID[i]) {
+                flag = false;
+            }
+        }
+        return flag && r.fileSize == fileSize && r.fileName.equals(fileName);
     }
 
     /**

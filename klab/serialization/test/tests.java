@@ -55,11 +55,11 @@ public class tests {
 
     @Test
     public void testValidResponse() throws NullPointerException, IOException, BadAttributeValueException {
-        byte[] enc = new byte[] { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 1, 0, 23, (byte) 192, (byte) 168, 1, 5, 1, 2, 3, 4, 0, 0, 0, 0, 'f', 'o', 'o', '\n'};
+        byte[] enc = new byte[] { 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 3, 1, 0, 23, (byte) 192, (byte) 168, 1, 5, 1, 2, 3, 4, 0, 0, 0, 30, 'f', 'o', 'o', '\n'};
         Response r = (Response) Message.decode(new MessageInput(new ByteArrayInputStream(enc)));
         assertAll(() -> assertArrayEquals(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, r.getID()),
                 () -> assertEquals(3, r.getTTL()), () -> assertEquals(RoutingService.BREADTHFIRST, r.getRoutingService()), () -> assertEquals( 1, r.getMatches()),
-                () -> assertEquals("192.168.1.5", r.getResponseHost().getAddress().getHostAddress()), () -> assertEquals( 23, r.getResponseHost().getPort()));
+                () -> assertEquals("192.168.1.5", r.getResponseHost().getAddress().getHostAddress()), () -> assertEquals( 23, r.getResponseHost().getPort()), () -> assertEquals(new Result(new MessageInput(new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 0, 0, 0, 30, 'f', 'o', 'o', '\n'}))), r.getResultList().get(0)));
     }
 
     @Test
