@@ -11,6 +11,14 @@ import java.io.IOException;
 import java.lang.Object;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * The Result class represents a result object 
+ * that stores file information.
+ * It provides methods for reading, initializing, 
+ * encoding, and decoding the object.
+ * The file information includes the file ID, 
+ * file size, and file name.
+ */
 public class Result extends Object {
     private byte[] fileID;
     private long fileSize;
@@ -21,8 +29,10 @@ public class Result extends Object {
      * from a MessageInput stream.
      *
      * @param in The MessageInput stream to read from.
-     * @throws IOException If an I/O error occurs while reading from the stream.
-     * @throws BadAttributeValueException If the attribute value is invalid.
+     * @throws IOException If an I/O error occurs 
+     * while reading from the stream.
+     * @throws BadAttributeValueException If 
+     * the attribute value is invalid.
      */
     public Result(MessageInput in) throws IOException,
             BadAttributeValueException {
@@ -45,7 +55,8 @@ public class Result extends Object {
         //get next 4 bytes of byte array
         setFileSize(in.readUnsignedInt());
         //System.out.println(bytes.length);
-        String x = new String( in.readString('\n'), StandardCharsets.US_ASCII);
+        String x = new String( in.readString('\n'), 
+        StandardCharsets.US_ASCII);
         //System.out.println(x);
         setFileName(x);
         if (this.fileName == null) {
@@ -84,7 +95,8 @@ public class Result extends Object {
      * Encodes the file information and writes it into the output stream.
      * 
      * @param out the output stream to write the encoded file information to
-     * @throws IOException if an I/O error occurs while writing to the output stream
+     * @throws IOException if an I/O error 
+     * occurs while writing to the output stream
      */
     public void encode(MessageOutput out) throws IOException {
         try {
@@ -103,13 +115,15 @@ public class Result extends Object {
     }
     /**
      * Returns a string representation of the Result object.
-     * The string includes the FileID in hexadecimal format, the FileSize in bytes, and the FileName.
+     * The string includes the FileID in hexadecimal 
+     * format, the FileSize in bytes, and the FileName.
      *
      * @return a string representation of the Result object.
      */
     @Override
     public String toString() {
-        return "Result: FileID=" + printBytesInHex(getFileID()) + "FileSize=" + getFileSize() + "bytes FileName=" + getFileName();
+        return "Result: FileID=" + printBytesInHex(fileID) + 
+        " FileSize=" + getFileSize() + " bytes FileName=" + getFileName();
 
     }
     private String printBytesInHex(byte[] bytes) {
@@ -140,10 +154,12 @@ public class Result extends Object {
     public final Result setFileID(byte[] i) throws BadAttributeValueException {
         //check to see if fileID isn't empty
         if (i == null) {
-            throw new BadAttributeValueException("fileID is null", "fileID");
+            throw new BadAttributeValueException(
+    "fileID is null", "fileID");
         }
         if (i.length != 4) {
-            throw new BadAttributeValueException("fileID is too big", "fileID");
+            throw new BadAttributeValueException(
+            "fileID is too big", "fileID");
         }
         //if filled with something valid, set fileID to parameter
         /*for (int j = 0; j < i.length; j++) {
@@ -203,7 +219,8 @@ public class Result extends Object {
         throws BadAttributeValueException {
         //check to see if fileSize exists
         if (fileName == null) {
-            throw new BadAttributeValueException("fileName is null", "fileName");
+            throw new BadAttributeValueException(
+            "fileName is null", "fileName");
         }
         if (!fileName.matches("[a-zA-Z0-9._\\-]+")) { //regex for valid filename
             throw new BadAttributeValueException(
@@ -226,7 +243,8 @@ public class Result extends Object {
     }*/
     /**
      * Converts the fileSize to a byte array representation.
-     * Throws an IllegalArgumentException if the fileSize is out of range for uint32.
+     * Throws an IllegalArgumentException if 
+     * the fileSize is out of range for uint32.
      * 
      * @return The byte array representation of the fileSize.
      */
@@ -246,7 +264,8 @@ public class Result extends Object {
      * Indicates whether some other object is "equal to" this one.
      * 
      * @param o the reference object with which to compare.
-     * @return {@code true} if this object is the same as the {@code o} argument; {@code false} otherwise.
+     * @return {@code true} if this object is 
+     * the same as the {@code o} argument; {@code false} otherwise.
      */
     @Override
     public boolean equals(Object o) {
@@ -268,7 +287,8 @@ public class Result extends Object {
 
     /**
         * Returns the hash code value for this Result object.
-        * The hash code is calculated based on the fileID, fileSize, and fileName fields.
+        * The hash code is calculated based on the fileID,
+         fileSize, and fileName fields.
         *
         * @return the hash code value for this Result object
         */

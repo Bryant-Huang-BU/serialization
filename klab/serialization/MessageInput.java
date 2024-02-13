@@ -16,7 +16,8 @@ import java.lang.Object;
 import java.nio.ByteBuffer;
 /**
  * The MessageInput class represents an input stream for reading messages.
- * It provides methods for reading bytes, unsigned integers, four bytes, bytes, and strings.
+ * It provides methods for reading bytes, unsigned integers, 
+ * four bytes, bytes, and strings.
  */
 public class MessageInput extends Object {
     private DataInputStream in; 
@@ -35,13 +36,15 @@ public class MessageInput extends Object {
     }
 
     /**
-     * Reads a specified number of bytes from the input stream starting at the given offset.
+     * Reads a specified number of bytes from the input 
+     * stream starting at the given offset.
      * 
      * @param off the starting offset in the input stream
      * @param len the number of bytes to read
      * @return an array of bytes containing the read data
      * @throws IOException if an I/O error occurs
-     * @throws IndexOutOfBoundsException if the offset or length are out of bounds
+     * @throws IndexOutOfBoundsException if the offset 
+     * or length are out of bounds
      */
     public byte[] readBytes(int len) throws IOException {
         if (len < 0) {
@@ -60,7 +63,8 @@ public class MessageInput extends Object {
      * Reads an unsigned integer from the input stream.
      * 
      * @return the unsigned integer value read from the input stream
-     * @throws NullPointerException if there are invalid bytes or an I/O error occurs
+     * @throws NullPointerException if there are invalid bytes 
+     * or an I/O error occurs
      */
     public long readUnsignedInt() throws NullPointerException{
         try {
@@ -129,6 +133,13 @@ public class MessageInput extends Object {
         }
      }
 
+        /**
+         * Reads a string with the specified size from the input stream.
+         * 
+         * @param size the size of the string to read
+         * @return a byte array containing the read string
+         * @throws IOException if an I/O error occurs
+         */
         public byte[] readStringWithSize(int size) throws IOException {
             try {
                 ByteArrayOutputStream bytes = new ByteArrayOutputStream();
