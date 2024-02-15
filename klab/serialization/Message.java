@@ -47,8 +47,7 @@ public class Message {
         public static Message decode(MessageInput in)
             throws IOException, BadAttributeValueException {
             byte[] type = in.readBytes(1);
-            int typeint = type[0] & 0xFF;
-            //System.out.println(typeint);
+            int typeint = type[0] & 0xFF;x
             byte[] msgID = in.readBytes(15);
             if (msgID.length != 15) {
                 throw new BadAttributeValueException(
@@ -68,8 +67,6 @@ public class Message {
             //System.out.println(routingService);
             buf  = in.readBytes(2);
             int payloadLength = (buf[0] & 0xFF) << 8 | (buf[1] & 0xFF);
-            //System.out.println(Arrays.toString(buf));
-            //System.out.println("p " + payloadLength);
             if (typeint == 1) {
                 String x = new String( in.readStringWithSize(payloadLength), 
                 StandardCharsets.US_ASCII);
@@ -116,6 +113,7 @@ public class Message {
                 return response;
             }
             else {
+                //System.out.println(typeint);
                 throw new BadAttributeValueException(
                 "Type not 1 or 2", "type");
             }
@@ -239,8 +237,13 @@ public class Message {
          * @return the updated Message object
          * @throws BadAttributeValueException if the length of msgID is not 15 bytes
          */
+
         public Message setID(byte[] msgID) 
-        throws BadAttributeValueException {
+        throws BadAttributeValueException {      
+            if (msgID == null) {
+                throw new BadAttributeValueException(
+                "msgID is null", "msgID");
+            }
             if (msgID.length != 15) {
                 throw new BadAttributeValueException(
                 "msgID is not 15 bytes", "msgID");
@@ -270,6 +273,10 @@ public class Message {
                 throw new BadAttributeValueException(
                 "ttl is less than 0", "ttl");
             }
+            else if (ttl > 255) {
+                throw new BadAttributeValueException(
+                "ttl is greater than 255", "ttl");
+            }
             this.ttl = ttl;
             return this;
         }
@@ -287,7 +294,10 @@ public class Message {
              * @param routingService the routing service to set
              * @return the updated message object
              */
-        public Message setRoutingService(RoutingService routingService) {
+        public Message setRoutingService(RoutingService routingService) throws BadAttributeValueException {
+            if (routingService == null) {
+                throw new BadAttributeValueException("routingService is null", "routingService");
+            }
             this.routingService = routingService;
             return this;
         }

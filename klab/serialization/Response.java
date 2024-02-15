@@ -169,8 +169,11 @@ public class Response extends Message {
             throw new BadAttributeValueException(
             "result is null", "result");
         }
+        if (resultList == null) {
+            resultList = new java.util.ArrayList<Result>();
+        }
         resultList.add(result);
-        } catch (BadAttributeValueException e) {
+        } catch (Exception e) {
             throw new BadAttributeValueException
             (e.getMessage(), "result");
         }

@@ -47,6 +47,7 @@ public class MessageInput extends Object {
      * or length are out of bounds
      */
     public byte[] readBytes(int len) throws IOException {
+        try {
         if (len < 0) {
             throw new IOException("Length is less than 0");
         } //input sanitization
@@ -57,6 +58,10 @@ public class MessageInput extends Object {
             System.out.print(b);
         }*/
         return bytes;
+        }
+        catch (IOException e) {
+            throw new IOException("Invalid Bytes");
+        }
     }
 
     /**
