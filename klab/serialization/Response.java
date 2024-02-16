@@ -42,6 +42,8 @@ public class Response extends Message {
                 "msgID, routingService, responseHost");
             }
             setResponseHost(responseHost);
+            List resultList = new java.util.ArrayList<Result>();
+            setResultList(resultList);
         } catch (BadAttributeValueException e) {
             throw new BadAttributeValueException
             ("msID, routingService, or responseHost is null", 
@@ -109,6 +111,32 @@ public class Response extends Message {
             if (responseHost == null) {
                 throw new BadAttributeValueException(
                 "responseHost is null", "responseHost");
+            }
+            if (responseHost.getAddress() == null) {
+                throw new BadAttributeValueException(
+                "responseHost address is null", "responseHost");
+            }
+            if (responseHost.getPort() < 0 || responseHost.getPort() > 65535) {
+                throw new BadAttributeValueException(
+                "responseHost port is invalid", "responseHost");
+            }
+            if (responseHost.getAddress().getHostAddress().isEmpty()) {
+                throw new BadAttributeValueException(
+                "responseHost address is empty", "responseHost");
+            }
+
+            //  JUnit Jupiter:Response:host setter:invalid:host=/224.1.2.3:42
+            //get individual octets
+            String[] octets = responseHost.getAddress().getHostAddress().
+            split("\\.");
+            if (octets.length != 4) {
+                throw new BadAttributeValueException(
+                "responseHost address is invalid", "responseHost");
+            }
+            //check if multicast
+            if (responseHost.getAddress().isMulticastAddress()) {
+                throw new BadAttributeValueException(
+                "responseHost address is multicast", "responseHost");
             }
             this.responseHost = responseHost;
             return this;

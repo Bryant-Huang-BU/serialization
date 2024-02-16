@@ -89,33 +89,12 @@ public class Search extends Message {
             ("searchString is null", "searchString");
         }
         //only alphanumeric characters and spaces, only -, _, . are allowed
-        if (!searchString.matches("[a-zA-Z0-9._-]+")) {
+        if (!searchString.matches("[a-zA-Z0-9._-]*")) {
             throw new BadAttributeValueException(
             "fileName is invalid", "fileName");
             //System.out.println("fileName is invalid");
         }
         this.searchString = searchString;
-        return this;
-    }
-
-    /**
-     * Returns the routing service.
-     *
-     * @return the routing service
-     */
-    public RoutingService getRoutingService() {
-        return routingService;
-    }
-
-        
-    /**
-     * Sets the routing service for the search operation.
-     * 
-     * @param routingService the routing service to be set
-     * @return the updated Search object
-     */
-    public Search setRoutingService(RoutingService routingService) {
-        this.routingService = routingService;
         return this;
     }
 

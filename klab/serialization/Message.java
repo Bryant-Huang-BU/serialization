@@ -47,7 +47,7 @@ public class Message {
         public static Message decode(MessageInput in)
             throws IOException, BadAttributeValueException {
             byte[] type = in.readBytes(1);
-            int typeint = type[0] & 0xFF;x
+            int typeint = type[0] & 0xFF;
             byte[] msgID = in.readBytes(15);
             if (msgID.length != 15) {
                 throw new BadAttributeValueException(
@@ -74,7 +74,7 @@ public class Message {
                     throw new BadAttributeValueException(
                     "Search String Mismatch with Size", "Search String");
                 }
-                return new Search (msgID, ttl, 
+                return new Search (msgID, ttl,
                 RoutingService.getRoutingService(routingService), x);
             }
             if (typeint == 2) { //return Response
