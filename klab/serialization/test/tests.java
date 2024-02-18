@@ -19,7 +19,7 @@ import org.junit.rules.ExpectedException;
 
 import static org.junit.Assert.*;
 import static org.junit.jupiter.api.Assertions.assertAll;
-
+//[]
 public class tests {
     @Test(expected = BadAttributeValueException.class)
     public void testInValidMessageType() throws NullPointerException, IOException, BadAttributeValueException {
@@ -221,6 +221,15 @@ public class tests {
         Response r = (Response) Message.decode(new MessageInput(new ByteArrayInputStream(enc)));
         assertAll(() -> assertArrayEquals(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }, r.getID()),
                 () -> assertEquals(3, r.getTTL()), () -> assertEquals(RoutingService.BREADTHFIRST, r.getRoutingService()), () -> assertEquals( 1, r.getMatches()),
+                () -> assertEquals("192.168.1.5", r.getResponseHost().getAddress().getHostAddress()), () -> assertEquals( 23, r.getResponseHost().getPort()), () -> assertEquals(new Result(new MessageInput(new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 0, 0, 0, 30, 'f', 'o', 'o', '\n'}))), r.getResultList().get(0)));
+    }
+
+    @Test
+    public void testValidDoubleResponse() throws NullPointerException, IOException, BadAttributeValueException {
+        byte[] enc = new byte[] { 2, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 50, 0, 0, 17, 1, 0, 13, 2, 2, 2, 2, 1, 2, 3, 4, 0, 0, 0, 56, 111, 10};
+        Response r = (Response) Message.decode(new MessageInput(new ByteArrayInputStream(enc)));
+        assertAll(() -> assertArrayEquals(new byte[] {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, r.getID()),
+                () -> assertEquals(50, r.getTTL()), () -> assertEquals(RoutingService.BREADTHFIRST, r.getRoutingService()), () -> assertEquals( 17, r.getMatches()),
                 () -> assertEquals("192.168.1.5", r.getResponseHost().getAddress().getHostAddress()), () -> assertEquals( 23, r.getResponseHost().getPort()), () -> assertEquals(new Result(new MessageInput(new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 0, 0, 0, 30, 'f', 'o', 'o', '\n'}))), r.getResultList().get(0)));
     }
 
