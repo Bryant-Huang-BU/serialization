@@ -102,6 +102,8 @@ public class tests {
     public void testValidSearchToString() throws NullPointerException, IOException, BadAttributeValueException {
         byte[] enc = new byte[] {1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 4, 1, 0, 4, 'L', 'i', 'p', 'a' };
         Search r = (Search) Message.decode(new MessageInput(new ByteArrayInputStream(enc)));
+        System.out.println(r.getTTL());
+        System.out.println(r.toString());
         assertEquals("Search: ID=010203040506070809101112131415 TTL=4 Routing=DEPTHFIRST Search=Lipa", r.toString());
     }
 
@@ -148,6 +150,23 @@ public class tests {
     @Test
     public void testResponseEncode() throws BadAttributeValueException, IOException {
         byte[] enc = new byte[] {2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 4, 0, 0, 3, 1, 0, 23, (byte) 192, (byte) 168, 1, 5, 1, 2, 3, 4, 0, 0, 0, 30, 'f', 'o', 'o', '\n'};
+        Response r = (Response) Message.decode(new MessageInput((new ByteArrayInputStream(enc))));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        MessageOutput m = new MessageOutput(outputStream);
+        r.encode(m);
+        byte[] actualEnc = outputStream.toByteArray();
+        /*for (byte b : actualEnc) {
+            System.out.print(b + " ");
+        }
+        System.out.print('\n');
+        for (byte b : enc) {
+            System.out.print(b + " ");
+        }*/
+        assertArrayEquals(enc, actualEnc);
+    }
+    @Test
+    public void testResponseEncodeLUL() throws BadAttributeValueException, IOException {
+        byte[] enc = new byte[] {2, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 50, 0, 0, 17, 1, 0, 13, 2, 2, 2, 2, 1, 2, 3, 4, 0, 0, 0, 56, 111, 10};
         Response r = (Response) Message.decode(new MessageInput((new ByteArrayInputStream(enc))));
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         MessageOutput m = new MessageOutput(outputStream);

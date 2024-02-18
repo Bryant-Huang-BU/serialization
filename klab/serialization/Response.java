@@ -76,6 +76,7 @@ public class Response extends Message {
         }
         String hostInfo = String.format("%s:%d", responseHost.getAddress().
         getHostAddress(), responseHost.getPort());
+        //System.out.println(getTTL());
         sb.append(" TTL=" + getTTL() + " Routing=" + getRoutingService()
         + " Host=" + hostInfo + " [");
         for (Result r : resultList) {

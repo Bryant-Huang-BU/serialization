@@ -49,7 +49,7 @@ public class Search extends Message {
      * @return a string representation of the Search object
      */
     public String toString() {
-        return "Search: ID=" + displayBytes() + " TTL=" + ttl +
+        return "Search: ID=" + displayBytes() + " TTL=" + getTTL() +
          " Routing=" + routingService + " Search=" + searchString;
     }
 
