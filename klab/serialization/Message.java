@@ -68,7 +68,7 @@ public class Message {
             buf  = in.readBytes(2);
             int payloadLength = (buf[0] & 0xFF) << 8 | (buf[1] & 0xFF);
             if (typeint == 1) {
-                String x = new String( in.readStringWithSize(payloadLength), 
+                String x = new String(in.readBytes(payloadLength),
                 StandardCharsets.US_ASCII);
                 if (payloadLength > x.length()) {
                     throw new BadAttributeValueException(
@@ -172,28 +172,29 @@ public class Message {
                 if (this instanceof Response) {
                     this.type = 2;
                 }
-                out.writeBytes(intToBytes(this.type, 1));
-                out.writeBytes(this.getID());
-                out.writeBytes(intToBytes(this.getTTL(), 1));
-                out.writeBytes(intToBytes(
-                this.getRoutingService().getCode(), 1));
+                out.writeBytes(intToBytes(this.type, 1), 1);
+                out.writeBytes(this.getID(), 15);
+                out.writeBytes(intToBytes(this.getTTL(), 1), 1);
+                out.writeBytes(
+                    intToBytes(this.getRoutingService().getCode(), 1), 1);
                 if (this.type == 1) {
                     byte[] x = ((Search)this).getSearchString()
                     .getBytes(StandardCharsets.US_ASCII);
                     byte[] watchlength = intToBytes(x.length, 2);
-                    out.writeBytes(watchlength);
-                    out.writeBytes(x);
+                    out.writeBytes(watchlength, 2);
+                    out.writeBytes(x, x.length);
                 }
                 if (this.type == 2) {
-                    out.writeBytes(intToBytes(getPayloadLength(), 2));
+                    //System.out.println(getPayloadLength());
+                    out.writeBytes(intToBytes(getPayloadLength(), 2), 2);
                     out.writeBytes(intToBytes(
-                    ((Response)this).getMatches(), 1));
+                    ((Response)this).getMatches(), 1), 1);
                     out.writeBytes(intToBytes(
-                    ((Response)this).getResponseHost().getPort(), 2));
+                    ((Response)this).getResponseHost().getPort(), 2), 2);
                     InetSocketAddress responseHost = 
                     ((Response)this).getResponseHost();
                     byte[] ip = responseHost.getAddress().getAddress();
-                    out.writeBytes(ip);
+                    out.writeBytes(ip, 4);
                     List<Result> resultList = 
                     ((Response)this).getResultList();
                     for (Result r : resultList) {

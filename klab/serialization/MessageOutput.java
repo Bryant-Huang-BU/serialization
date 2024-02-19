@@ -43,7 +43,7 @@ public class MessageOutput extends Object{
      * @throws IOException if an I/O error occurs
      * @throws NullPointerException if the byte array is null
      */
-    public void writeBytes(byte[] msgID)
+    public void writeBytes(byte[] msgID, int len)
      throws IOException, NullPointerException {
         if (msgID == null) {
             throw new NullPointerException("bytes is null");
@@ -52,7 +52,15 @@ public class MessageOutput extends Object{
             return;
         }
         try {
-            out.write(msgID);
+            //pad with 0s if not equal to length
+            if (msgID.length < len) {
+                byte[] newMsgID = new byte[len];
+                for (int i = 0; i < msgID.length; i++) {
+                    newMsgID[i] = msgID[i];
+                }
+                msgID = newMsgID;
+            }
+            out.write(msgID, 0, len);
         } catch (IOException e) {
             throw new IOException("Bad Write Function");
         }

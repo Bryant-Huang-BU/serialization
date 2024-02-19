@@ -63,6 +63,7 @@ public class Result extends Object {
             throw new IOException("Invalid Bytes");
         }
         //System.out.println("made it through no issue");
+        
     } catch(Exception e) {
         //e.printStackTrace();
         if (!e.getMessage().isEmpty()) {
@@ -100,10 +101,10 @@ public class Result extends Object {
      */
     public void encode(MessageOutput out) throws IOException {
         try {
-            out.writeBytes(fileID);
-            out.writeBytes(longToBytes());
-            out.writeBytes(fileName.getBytes(StandardCharsets.US_ASCII));
-            out.writeBytes("\n".getBytes(StandardCharsets.US_ASCII));
+            out.writeBytes(fileID, 4);
+            out.writeBytes(longToBytes(), 4);
+            out.writeBytes(fileName.getBytes(StandardCharsets.US_ASCII), fileName.length());
+            out.writeBytes("\n".getBytes(StandardCharsets.US_ASCII), 1);
         }
         catch (Exception E) {
             if (E.getMessage() != null) {

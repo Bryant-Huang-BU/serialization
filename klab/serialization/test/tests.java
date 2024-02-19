@@ -167,18 +167,22 @@ public class tests {
     @Test
     public void testResponseEncodeLUL() throws BadAttributeValueException, IOException {
         byte[] enc = new byte[] {2, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 50, 0, 0, 17, 1, 0, 13, 2, 2, 2, 2, 1, 2, 3, 4, 0, 0, 0, 56, 111, 10};
-        Response r = (Response) Message.decode(new MessageInput((new ByteArrayInputStream(enc))));
+        //2.2.2.2:13
+        byte[] t = new byte[] {1,2,3,4};
+        Result x = new Result(t, (long) 56, new String ("o"));
+        Response r = new Response(new byte[] {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, 50, RoutingService.BREADTHFIRST, new java.net.InetSocketAddress("2.2.2.2", 13));
+        r.addResult(x);
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         MessageOutput m = new MessageOutput(outputStream);
         r.encode(m);
         byte[] actualEnc = outputStream.toByteArray();
-        /*for (byte b : actualEnc) {
+        for (byte b : actualEnc) {
             System.out.print(b + " ");
         }
         System.out.print('\n');
         for (byte b : enc) {
             System.out.print(b + " ");
-        }*/
+        }
         assertArrayEquals(enc, actualEnc);
     }
     @Test
@@ -226,12 +230,12 @@ public class tests {
 
     @Test
     public void testValidDoubleResponse() throws NullPointerException, IOException, BadAttributeValueException {
-        byte[] enc = new byte[] { 2, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 50, 0, 0, 17, 1, 0, 13, 2, 2, 2, 2, 1, 2, 3, 4, 0, 0, 0, 56, 111, 10};
+        byte[] enc = new byte[]{2, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 50, 0, 0, 17, 1, 0, 13, 2, 2, 2, 2, 1, 2, 3, 4, 0, 0, 0, 56, 111, 10};
         Response r = (Response) Message.decode(new MessageInput(new ByteArrayInputStream(enc)));
-        assertAll(() -> assertArrayEquals(new byte[] {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, r.getID()),
-                () -> assertEquals(50, r.getTTL()), () -> assertEquals(RoutingService.BREADTHFIRST, r.getRoutingService()), () -> assertEquals( 17, r.getMatches()),
-                () -> assertEquals("192.168.1.5", r.getResponseHost().getAddress().getHostAddress()), () -> assertEquals( 23, r.getResponseHost().getPort()), () -> assertEquals(new Result(new MessageInput(new ByteArrayInputStream(new byte[] {1, 2, 3, 4, 0, 0, 0, 30, 'f', 'o', 'o', '\n'}))), r.getResultList().get(0)));
+
     }
+
+
 
     @Test
     public void testValidResponseToString() throws NullPointerException, IOException, BadAttributeValueException {

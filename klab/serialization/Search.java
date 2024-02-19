@@ -50,7 +50,7 @@ public class Search extends Message {
      */
     public String toString() {
         return "Search: ID=" + displayBytes() + " TTL=" + getTTL() +
-         " Routing=" + routingService + " Search=" + searchString;
+         " Routing=" + getRoutingService() + " Search=" + getSearchString();
     }
 
     /**
