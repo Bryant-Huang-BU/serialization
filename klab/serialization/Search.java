@@ -5,6 +5,10 @@
 ************************************************/
 
 package klab.serialization;
+
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * The Search class represents a search operation in the system.
  * It extends the Message class and encapsulates the search string,
@@ -50,7 +54,6 @@ public class Search extends Message {
          " Routing=" + getRoutingService() + " Search=" + getSearchString();
     }
 
-
     /**
      * Sets the search string.
      * 
@@ -66,6 +69,11 @@ public class Search extends Message {
             ("searchString is null", "searchString");
         }
         if (searchString.length() > 65535) {
+            throw new klab.serialization.BadAttributeValueException
+            ("searchString is too big", "searchString");
+        }
+        //only alphanumeric characters and spaces, only -, _, . are allowed
+        if (!searchString.matches("[a-zA-Z0-9._-]*")) {
             throw new BadAttributeValueException(
                 "fileName is too long", "fileName");
         }
@@ -77,39 +85,28 @@ public class Search extends Message {
         this.searchString = searchString;
         return this;
     }
+    @Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Search)) return false;
+    Search search = (Search) o;
+    return getTTL() == search.getTTL() &&
+        getRoutingService() == search.getRoutingService() &&
+        Arrays.equals(getID(), search.getID()) &&
+        Objects.equals(getSearchString(), search.getSearchString());
+}
 
-    /**
-     * Returns the hash code of the Search object.
-     * The hash code is based on the ID, TTL, routing service, and search string.
-     *
-     * @return the hash code of the Search object
-     */
-    public int hashCode() {
-        int result = 17;
-        result = 31 * result + getID().hashCode();
-        result = 31 * result + getTTL();
-        result = 31 * result + getRoutingService().hashCode();
-        result = 31 * result + searchString.hashCode();
-        return result;
-    }
-
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (hashCode() != obj.hashCode()) {
-            return false;
-        }
-        return true;
-    }
-    /*public static String printBytesInHex(byte[] bytes) {
+@Override
+public int hashCode() {
+    int result = Objects.hash(getID(), getSearchString(), getRoutingService());
+    result = 31 * result + getTTL();
+    return result;
+}
+    public static String printBytesInHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
             sb.append(String.format("%02X", b));
         }
         return sb.toString();
-    }*/
+    }
 }

@@ -1,3 +1,9 @@
+/************************************************
+* Author: Bryant Huang
+* Assignment: Program 1
+* Class: CSI4321
+************************************************/
+
 package klab.serialization;
 
 import java.io.IOException;
@@ -193,13 +199,7 @@ public class Message {
                 if (out == null) {
                     throw new IOException("out is null");
                 }
-                int type = 0;
-                if (this instanceof Search) {
-                    type = 1;
-                }
-                if (this instanceof Response) {
-                    type = 2;
-                }
+                int type = getMessageType();
                 if (type == 0) {
                     throw new IOException("Invalid Type");
                 }
@@ -225,7 +225,7 @@ public class Message {
                     ((Response)this).getResponseHost().getPort(), 2), 2);
                     InetSocketAddress responseHost = 
                     ((Response)this).getResponseHost();
-                    byte[] ip = responseHost.getAddress().getAddress();
+                    byte[] ip = responseHost.getAddress().getAddress(); 
                     out.writeBytes(ip, 4);
                     List<Result> resultList =
                     ((Response)this).getResultList();
@@ -237,7 +237,31 @@ public class Message {
                 throw new IOException("Bad Write Function");
             }
         }
+        protected String displayBytes() {
+            StringBuilder sb = new StringBuilder();
+            for (byte b : getID()) {
+                sb.append(String.format("%02X", b));
+            }
+            return sb.toString();
+        }
 
+        /**
+         * Returns the type of the message.
+         * 
+         * @return the message type:
+         *         - 1 if the message is an instance of Search
+         *         - 2 if the message is an instance of Response
+         *         - 0 if the message is neither an instance of Search nor Response
+         */
+        public int getMessageType() {
+            if (this instanceof Search) {
+                return 1;
+            }
+            if (this instanceof Response) {
+                return 2;
+            }
+            return 0;
+        }
         /**
          * Converts an integer to a byte array of specified length.
          *
@@ -325,35 +349,17 @@ public class Message {
             return routingService;
         }
         /**
-             * Sets the routing service for the message.
-             *
-             * @param routingService the routing service to set
-             * @return the updated message object
-             */
+         * Sets the routing service for the message.
+         *
+         * @param routingService the routing service to set
+         * @return the updated message object
+         */
         public Message setRoutingService(RoutingService routingService) throws BadAttributeValueException {
             if (routingService == null) {
                 throw new BadAttributeValueException("routingService is null", "routingService");
             }
             this.routingService = routingService;
             return this;
-        }
-        
-        /**
-         * Returns the type of the message.
-         * 
-         * @return the message type:
-         *         - 1 if the message is of type Search
-         *         - 2 if the message is of type Response
-         *         - 0 if error
-         */
-        public int getMessageType() {
-            if (this instanceof Search) {
-                return 1;
-            }
-            if (this instanceof Response) {
-                return 2;
-            }
-            return 0;
         }
 
         /**
@@ -371,6 +377,8 @@ public class Message {
             if (o == null || getClass() != o.getClass()) return false;
 
             Message message = (Message) o;
+
+            if (getMessageType() != getMessageType()) return false;
             if (ttl != message.ttl) return false;
             if (!Objects.equals(msgID, message.msgID)) return false;
             return routingService == message.routingService;
@@ -385,7 +393,7 @@ public class Message {
          */
         @Override
         public int hashCode() {
-            int result = 10;
+            int result = getMessageType();
             result = 31 * result + (msgID != null ? msgID.hashCode() : 0);
             result = 31 * result + ttl;
             result = 31 * result + (routingService != null 

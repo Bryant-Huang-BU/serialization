@@ -43,7 +43,7 @@ public class Response extends Message {
                 "msgID, routingService, responseHost");
             }
             setResponseHost(responseHost);
-            List<Result> resultList = new java.util.ArrayList<Result>();
+            List<Result> resultList = new java.util.ArrayList<>();
             setResultList(resultList);
             setPayloadLength(7);
         } catch (BadAttributeValueException e) {
@@ -72,9 +72,7 @@ public class Response extends Message {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Response: ID=");
-        for (byte b :getID()) {
-            sb.append(String.format("%02X", b));
-        }
+        sb.append(displayBytes());
         String hostInfo = String.format("%s:%d", responseHost.getAddress().
         getHostAddress(), responseHost.getPort());
         //System.out.println(getTTL());
@@ -224,22 +222,23 @@ public class Response extends Message {
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) {
+        if (o == this) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof Response)) {
             return false;
         }
-        Response response = (Response) o;
-        if (matches != response.matches) {
-            return false;
+        Response r = (Response) o;
+        boolean flag = true;
+        if (r.hashCode() != this.hashCode()) {
+            flag = false;
         }
-        if (responseHost != null ? !responseHost.equals(response.
-        responseHost) : response.responseHost != null) {
-            return false;
+        for (Result res : r.getResultList()) {
+            if (!this.getResultList().contains(res)) {
+                flag = false;
+            }
         }
-        return resultList != null ? resultList.equals(response.resultList) 
-        : response.resultList == null;
+        return flag && r.getTTL() == this.getTTL() && this.getResponseHost().equals(r.getResponseHost()) && r.getRoutingService().equals(this.getRoutingService()) && r.getMatches() == this.getMatches();
     }
 
     /**
@@ -251,8 +250,12 @@ public class Response extends Message {
         */
     @Override
     public int hashCode() {
-        int result = responseHost != null ? responseHost.hashCode() : 0;
-        result = 31 * result + (resultList != null ? resultList.hashCode() : 0);
+        int result = 17;
+        result = 31 * result + getID().hashCode();
+        result = 31 * result + getTTL();
+        result = 31 * result + getRoutingService().hashCode();
+        result = 31 * result + responseHost.hashCode();
+        result = 31 * result + resultList.hashCode();
         result = 31 * result + matches;
         return result;
     }
