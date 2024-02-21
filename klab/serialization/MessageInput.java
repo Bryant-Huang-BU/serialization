@@ -42,7 +42,7 @@ public class MessageInput extends Object {
      * @param len the number of bytes to read
      * @return an array of bytes containing the read data
      * @throws IOException if an I/O error occurs
-     * @throws IndexOutOfBoundsException if the offset 
+     * @throws IndexOutOfBoundsException idf the offset 
      * or length are out of bounds
      */
     public byte[] readBytes(int len) throws IOException {
