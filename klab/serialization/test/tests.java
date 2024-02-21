@@ -100,7 +100,7 @@ public class tests {
 
     @Test
     public void testValidSearchToString() throws NullPointerException, IOException, BadAttributeValueException {
-        byte[] enc = new byte[] {1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 4, 1, 0, 4, 'L', 'i', 'p', 'a' };
+        byte[] enc = new byte[] {1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 4, 1, 0, 4, 'L', 'i', 'p', 'a' }; 
         Search r = (Search) Message.decode(new MessageInput(new ByteArrayInputStream(enc)));
         System.out.println(r.getTTL());
         System.out.println(r.toString());
@@ -155,13 +155,13 @@ public class tests {
         MessageOutput m = new MessageOutput(outputStream);
         r.encode(m);
         byte[] actualEnc = outputStream.toByteArray();
-        /*for (byte b : actualEnc) {
+        for (byte b : actualEnc) {
             System.out.print(b + " ");
         }
         System.out.print('\n');
         for (byte b : enc) {
             System.out.print(b + " ");
-        }*/
+        }
         assertArrayEquals(enc, actualEnc);
     }
     @Test

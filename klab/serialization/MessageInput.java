@@ -25,12 +25,12 @@ public class MessageInput extends Object {
      * Constructs a new MessageInput object with the specified input stream.
      * 
      * @param in the input stream to read messages from
-     * @throws NullPointerException if the input stream is null
+     * @throws IOException if the input stream is null
      */
-    public MessageInput(InputStream in) throws NullPointerException { 
+    public MessageInput(InputStream in) throws IOException { 
         //constructor
             if (in == null) { //check to see if in is null
-                throw new NullPointerException("in is null"); //throw exception
+                throw new IOException("in is null"); //throw exception
             }
             this.in = new DataInputStream(in); //set in to new DataInputStream
     }
@@ -48,16 +48,25 @@ public class MessageInput extends Object {
      */
     public byte[] readBytes(int len) throws IOException {
         try {
-        if (len < 0) {
-            throw new IOException("Length is less than 0");
-        } //input sanitization
-        byte[] bytes = new byte[len];
-        in.readNBytes(bytes,0, len);
-        //System.out.println(len);
-        /*for (byte b : bytes) {
-            System.out.print(b);
-        }*/
-        return bytes;
+            if (len < 0) {
+                throw new IOException("Length is less than 0");
+            } //input sanitization
+            byte[] bytes = new byte[len];
+            in.readNBytes(bytes,0, len);
+            //System.out.println(len);
+            /*for (byte b : bytes) {
+                System.out.print(b);
+            }*/
+            if (bytes.length != len) {
+                throw new IOException("Invalid Bytes");
+            } //input sanitization
+            if (len == 0) {
+                throw new IOException("No bytes to read");
+            } //input sanitization
+            if (len < 0) {
+                throw new IOException("Length is less than 0");
+            } //input sanitization
+            return bytes;
         }
         catch (IOException e) {
             throw new IOException("Invalid Bytes");
@@ -68,21 +77,24 @@ public class MessageInput extends Object {
      * Reads an unsigned integer from the input stream.
      * 
      * @return the unsigned integer value read from the input stream
-     * @throws NullPointerException if there are invalid bytes 
+     * @throws IOException if there are invalid bytes 
      * or an I/O error occurs
      */
-    public long readUnsignedInt() throws NullPointerException{
+    public long readUnsignedInt() throws IOException{
         try {
             byte[] bytes = new byte[4];
             in.readNBytes(bytes, 0, 4);
             long result = ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL;
+            if (bytes.length != 4) {
+                throw new IOException("Invalid Bytes");
+            } //input sanitization
             // basically convert the byte array to an long, 
             // but it is removed of sign
             // Convert to unsigned long
             //System.out.println(result);
             return result;
         } catch (IOException e) {
-            throw new NullPointerException("Invalid Bytes");
+            throw new IOException("Invalid Bytes");
         }
     }
 

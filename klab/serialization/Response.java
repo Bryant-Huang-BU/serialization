@@ -5,6 +5,7 @@
 * Class: CSI4321
 ************************************************/
 package klab.serialization;
+import java.io.ByteArrayOutputStream;
 import java.net.InetSocketAddress;
 import java.util.List;
 
@@ -44,6 +45,7 @@ public class Response extends Message {
             setResponseHost(responseHost);
             List resultList = new java.util.ArrayList<Result>();
             setResultList(resultList);
+            setPayloadLength(7);
         } catch (BadAttributeValueException e) {
             throw new BadAttributeValueException
             ("msID, routingService, or responseHost is null", 
@@ -192,7 +194,7 @@ public class Response extends Message {
      * @throws BadAttributeValueException if the result is null
      */
     public Response addResult(Result result)
-                   throws BadAttributeValueException {
+    throws BadAttributeValueException {
         try {
         if (result == null) {
             throw new BadAttributeValueException(
@@ -202,6 +204,12 @@ public class Response extends Message {
             resultList = new java.util.ArrayList<Result>();
         }
         resultList.add(result);
+        this.matches++;
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        MessageOutput m = new MessageOutput(outputStream);
+        result.encode(m);
+        byte[] enc = outputStream.toByteArray();
+        setPayloadLength(enc.length + getPayloadLength());
         } catch (Exception e) {
             throw new BadAttributeValueException
             (e.getMessage(), "result");

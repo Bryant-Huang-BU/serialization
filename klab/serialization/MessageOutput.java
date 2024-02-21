@@ -44,9 +44,9 @@ public class MessageOutput extends Object{
      * @throws NullPointerException if the byte array is null
      */
     public void writeBytes(byte[] msgID, int len)
-     throws IOException, NullPointerException {
+     throws IOException {
         if (msgID == null) {
-            throw new NullPointerException("bytes is null");
+            throw new IOException("bytes is null");
         }
         if (msgID.length == 0) {
             return;

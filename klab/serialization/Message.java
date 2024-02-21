@@ -46,6 +46,9 @@ public class Message {
          */
         public static Message decode(MessageInput in)
             throws IOException, BadAttributeValueException {
+            if (in == null) {
+                throw new IOException("in is null");
+            } 
             byte[] type = in.readBytes(1);
             int typeint = type[0] & 0xFF;
             byte[] msgID = in.readBytes(15);
@@ -101,14 +104,15 @@ public class Message {
                 new InetSocketAddress(address, port));
                 response.setMatches(matches);
                 List<Result> resultsq = new ArrayList <Result>(matches);
-                response.setResultList(resultsq);
+
                 if (matches > 0) {
                     for (int i = 0; i < matches; i++) {
                         Result result = new Result(in);
                         //System.out.println(result.toString());
-                        response.addResult(result);
+                        resultsq.add(result);
                     }
                 }
+                response.setResultList(resultsq);
                 response.setPayloadLength(payloadLength);
                 return response;
             }
@@ -166,11 +170,18 @@ public class Message {
         public void encode(MessageOutput out)
             throws IOException {
             try {
+                if (out == null) {
+                    throw new IOException("out is null");
+                }
+                this.type = 0;
                 if (this instanceof Search) {
                     this.type = 1;
                 }
                 if (this instanceof Response) {
                     this.type = 2;
+                }
+                if (this.type == 0) {
+                    throw new IOException("Invalid Type");
                 }
                 out.writeBytes(intToBytes(this.type, 1), 1);
                 out.writeBytes(this.getID(), 15);
@@ -187,15 +198,16 @@ public class Message {
                 if (this.type == 2) {
                     //System.out.println(getPayloadLength());
                     out.writeBytes(intToBytes(getPayloadLength(), 2), 2);
+                    assert this instanceof Response;
                     out.writeBytes(intToBytes(
-                    ((Response)this).getMatches(), 1), 1);
+                    (((Response)this).getResultList().size()), 1), 1);
                     out.writeBytes(intToBytes(
                     ((Response)this).getResponseHost().getPort(), 2), 2);
                     InetSocketAddress responseHost = 
                     ((Response)this).getResponseHost();
                     byte[] ip = responseHost.getAddress().getAddress();
                     out.writeBytes(ip, 4);
-                    List<Result> resultList = 
+                    List<Result> resultList =
                     ((Response)this).getResultList();
                     for (Result r : resultList) {
                         r.encode(out);
@@ -213,8 +225,11 @@ public class Message {
          * @param n the length of the resulting byte array
          * @return the byte array representation of the integer
          */
-        public byte[] intToBytes(int x, int n) {
+        public byte[] intToBytes(int x, int n) throws IOException {
             byte[] bytes = new byte[n];
+            if (n == 0) {
+                throw new IOException("Invalid Bytes");
+            }
             for (int i = 0; i < n; i++) {
                 bytes[i] = (byte) (x >> (8 * (n - i - 1)));
                 //System.out.println(bytes[i]);
