@@ -108,6 +108,40 @@ public class tests {
     }
 
     @Test
+    public void testPrematureEOS() throws NullPointerException, IOException, BadAttributeValueException {
+        byte[] enc = new byte[] { 1, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 50, 0, 0, 2, 110, 101};
+        Search r = (Search) Message.decode(new MessageInput(new ByteArrayInputStream(enc)));
+        assertAll(() -> assertArrayEquals(new byte[] {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, r.getID()),
+                () -> assertEquals(50, r.getTTL()), () -> assertEquals(RoutingService.BREADTHFIRST, r.getRoutingService()),
+                () -> assertEquals("", r.getSearchString())); 
+    }
+
+    @Test
+    public void testValidEOS() throws NullPointerException, IOException, BadAttributeValueException {
+        byte[] enc = new byte[] {1, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 50, 0, 0, 0 }; 
+        Search r = (Search) Message.decode(new MessageInput(new ByteArrayInputStream(enc)));
+        assertAll(() -> assertArrayEquals(new byte[] {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1}, r.getID()),
+                () -> assertEquals(50, r.getTTL()), () -> assertEquals(RoutingService.BREADTHFIRST, r.getRoutingService()),
+                () -> assertEquals("", r.getSearchString()));
+    }
+
+    @Test
+    public void testDoublePrematureEOSa() throws IOException {
+    // Create a byte array that simulates a message with a double premature EoS error
+    byte[] message = {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, -1, 0, 0, 7, 0, 0, 13, 2, 2, 2, 2};
+
+    // Create a ByteArrayInputStream to read the message from
+    ByteArrayInputStream inputStream = new ByteArrayInputStream(message);
+    // Create a MessageInput object to read the message
+    MessageInput messageInput = new MessageInput(inputStream);
+    // Try to read the message using the MessageInput object
+    assertThrows(IOException.class, () -> {
+        Response response = (Response) Message.decode(messageInput);
+        System.out.println(response.toString());
+    });
+}
+
+    @Test
     public void testValidSearchEncode() throws NullPointerException, IOException, BadAttributeValueException {
         byte[] enc = new byte[] {1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 4, 0, 0, 4, 'L', 'i', 'p', 'a' };
         Search r = (Search) Message.decode(new MessageInput(new ByteArrayInputStream(enc)));

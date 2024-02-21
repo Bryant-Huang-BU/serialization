@@ -46,7 +46,7 @@ public class Result extends Object {
         }*/
         int off = 0;
         //get starting 4 bytes of byte array
-        byte[] buf = in.readFourBytes();
+        byte[] buf = in.readBytes(4);
         setFileID(buf);
         //buf = getFileID();
         /*for (int i = 0; i < 4; i++) {
@@ -55,7 +55,7 @@ public class Result extends Object {
         //get next 4 bytes of byte array
         setFileSize(in.readUnsignedInt());
         //System.out.println(bytes.length);
-        String x = new String( in.readString('\n'), 
+        String x = new String( in.readString('\n'),
         StandardCharsets.US_ASCII);
         //System.out.println(x);
         setFileName(x);

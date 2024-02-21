@@ -12,6 +12,8 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 /**
  * Represents a message that can be encoded and decoded for communication.
  */
@@ -78,7 +80,11 @@ public class Message {
             if (typeint == 1) {
                 String x = new String(in.readBytes(payloadLength),
                 StandardCharsets.US_ASCII);
-                if (payloadLength > x.length()) {
+                /*if (in.isAvail()) {
+                    throw new BadAttributeValueException(
+                    "No EOS", "Search String");
+                }*/
+                if (payloadLength != x.length()) {
                     throw new BadAttributeValueException(
                     "Search String Mismatch with Size", "Search String");
                 }
@@ -137,6 +143,21 @@ public class Message {
             this.payloadLength = payloadLength;
         }
 
+        /**
+         * Returns a string representation of the bytes in the ID array.
+         * If a byte is a single digit, a leading zero is added.
+         * The representation is in decimal format.
+         *
+         * @return the string representation of the bytes in the ID array
+         */
+        protected String displayBytes() {
+            StringBuilder sb = new StringBuilder();
+            for (byte b :getID()) {
+                sb.append(String.format("%02X", b));
+            }
+            return sb.toString();
+        }
+            
         /**
          * Returns the length of the payload.
          *
@@ -359,8 +380,7 @@ public class Message {
 
             if (getMessageType() != getMessageType()) return false;
             if (ttl != message.ttl) return false;
-            if (msgID != null ? !msgID.equals(message.msgID)
-            : message.msgID != null) return false;
+            if (!Objects.equals(msgID, message.msgID)) return false;
             return routingService == message.routingService;
         }
 

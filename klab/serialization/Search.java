@@ -50,7 +50,7 @@ public class Search extends Message {
      * @return a string representation of the Search object
      */
     public String toString() {
-        return "Search: ID=" + displayBytes() + " TTL=" + getTTL() +
+        return "Search: ID=" + this.displayBytes() + " TTL=" + getTTL() +
          " Routing=" + getRoutingService() + " Search=" + getSearchString();
     }
 
@@ -75,8 +75,12 @@ public class Search extends Message {
         //only alphanumeric characters and spaces, only -, _, . are allowed
         if (!searchString.matches("[a-zA-Z0-9._-]*")) {
             throw new BadAttributeValueException(
-            "fileName is invalid", "fileName");
-            //System.out.println("fileName is invalid");
+                "fileName is too long", "fileName");
+        }
+        //only alphanumeric characters and spaces, only -, _, . are allowed
+        if (!searchString.matches("[a-zA-Z0-9._-]*")){
+            throw new BadAttributeValueException(
+                "fileName is invalid", "fileName");
         }
         this.searchString = searchString;
         return this;

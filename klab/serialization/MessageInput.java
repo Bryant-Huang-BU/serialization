@@ -27,10 +27,10 @@ public class MessageInput extends Object {
      * @param in the input stream to read messages from
      * @throws IOException if the input stream is null
      */
-    public MessageInput(InputStream in) throws IOException { 
+    public MessageInput(InputStream in) throws NullPointerException { 
         //constructor
             if (in == null) { //check to see if in is null
-                throw new IOException("in is null"); //throw exception
+                throw new NullPointerException("in is null"); //throw exception
             }
             this.in = new BufferedInputStream(in); //set in to new DataInputStream
     }
@@ -39,7 +39,6 @@ public class MessageInput extends Object {
      * Reads a specified number of bytes from the input 
      * stream starting at the given offset.
      * 
-     * @param off the starting offset in the input stream
      * @param len the number of bytes to read
      * @return an array of bytes containing the read data
      * @throws IOException if an I/O error occurs
@@ -48,6 +47,7 @@ public class MessageInput extends Object {
      */
     public byte[] readBytes(int len) throws IOException {
         try {
+            //check if stream ends unexpectdly
             if (len < 0) {
                 throw new IOException("Length is less than 0");
             } //input sanitization
@@ -77,45 +77,24 @@ public class MessageInput extends Object {
         try {
             byte[] bytes = new byte[4];
             in.readNBytes(bytes, 0, 4);
-            long result = ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL;
-            if (bytes.length != 4) {
-                throw new IOException("Invalid Bytes");
-            } //input sanitization
+            return(ByteBuffer.wrap(bytes).getInt() & 0xFFFFFFFFL);
+            //input sanitization
             // basically convert the byte array to an long, 
             // but it is removed of sign
             // Convert to unsigned long
             //System.out.println(result);
-            return result;
         } catch (IOException e) {
             throw new IOException("Invalid Bytes");
         }
     }
 
     /**
-     * Reads four bytes from the input stream.
-     *
-     * @return an array of four bytes read from the input stream.
-     * @throws IOException if an I/O error occurs.
-     */
-    public byte[] readFourBytes() throws IOException {
-            byte[] bytes = new byte[4];
-            in.readNBytes(bytes, 0, 4);
-            if (bytes.length != 4) {
-                throw new IOException("Invalid Bytes");
-            }
-            return bytes;
-    }
-    
-
-    /**
      * Reads a string from the input stream.
      *
      * @return the string read from the input stream
      * @throws IOException if an I/O error occurs
-     */
-    
-     
-     public byte[] readString(char delim) throws IOException {
+    */
+    public byte[] readString(char delim) throws IOException {
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             int readBytes;
