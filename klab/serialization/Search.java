@@ -12,8 +12,6 @@ package klab.serialization;
  */
 public class Search extends Message {
     private String searchString;
-    private RoutingService routingService;
-    private int ttl;
 
     /**
      * Constructs a Search object with the specified parameters.
@@ -29,7 +27,6 @@ public class Search extends Message {
     String searchString) throws BadAttributeValueException {
         super(msgID, ttl, routingService); 
         // Add this line to invoke the super class constructor
-        setType(0);
         setSearchString(searchString);
     }
 
@@ -49,28 +46,8 @@ public class Search extends Message {
      * @return a string representation of the Search object
      */
     public String toString() {
-        return "Search: ID=" + displayBytes() + " TTL=" + getTTL() +
+        return "Search: ID=" + this.displayBytes() + " TTL=" + getTTL() +
          " Routing=" + getRoutingService() + " Search=" + getSearchString();
-    }
-
-    /**
-     * Returns a string representation of the bytes in the ID array.
-     * If a byte is a single digit, a leading zero is added.
-     * The representation is in decimal format.
-     *
-     * @return the string representation of the bytes in the ID array
-     */
-    private String displayBytes() {
-        StringBuilder sb = new StringBuilder();
-        //if double digit, need a 0 in front
-        for (byte b : getID()) {
-            if (b < 10) {
-                sb.append("0");
-            }
-            //show decimal, not hex
-            sb.append(b);
-        }
-        return sb.toString();
     }
 
 
@@ -88,16 +65,46 @@ public class Search extends Message {
             throw new klab.serialization.BadAttributeValueException
             ("searchString is null", "searchString");
         }
-        //only alphanumeric characters and spaces, only -, _, . are allowed
-        if (!searchString.matches("[a-zA-Z0-9._-]*")) {
+        if (searchString.length() > 65535) {
             throw new BadAttributeValueException(
-            "fileName is invalid", "fileName");
-            //System.out.println("fileName is invalid");
+                "fileName is too long", "fileName");
+        }
+        //only alphanumeric characters and spaces, only -, _, . are allowed
+        if (!searchString.matches("[a-zA-Z0-9._-]*")){
+            throw new BadAttributeValueException(
+                "fileName is invalid", "fileName");
         }
         this.searchString = searchString;
         return this;
     }
 
+    /**
+     * Returns the hash code of the Search object.
+     * The hash code is based on the ID, TTL, routing service, and search string.
+     *
+     * @return the hash code of the Search object
+     */
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + getID().hashCode();
+        result = 31 * result + getTTL();
+        result = 31 * result + getRoutingService().hashCode();
+        result = 31 * result + searchString.hashCode();
+        return result;
+    }
+
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (hashCode() != obj.hashCode()) {
+            return false;
+        }
+        return true;
+    }
     /*public static String printBytesInHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {

@@ -80,4 +80,6 @@ public class MessageOutput extends Object{
             throw new IOException("Bad Write Function");
         }
     }
+
+    
 }

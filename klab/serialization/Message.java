@@ -6,11 +6,12 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
 /**
  * Represents a message that can be encoded and decoded for communication.
  */
 public class Message {
-        private int type;
         private byte[] msgID;
         private int ttl;
         private RoutingService routingService;
@@ -73,7 +74,11 @@ public class Message {
             if (typeint == 1) {
                 String x = new String(in.readBytes(payloadLength),
                 StandardCharsets.US_ASCII);
-                if (payloadLength > x.length()) {
+                /*if (in.isAvail()) {
+                    throw new BadAttributeValueException(
+                    "No EOS", "Search String");
+                }*/
+                if (payloadLength != x.length()) {
                     throw new BadAttributeValueException(
                     "Search String Mismatch with Size", "Search String");
                 }
@@ -133,6 +138,21 @@ public class Message {
         }
 
         /**
+         * Returns a string representation of the bytes in the ID array.
+         * If a byte is a single digit, a leading zero is added.
+         * The representation is in decimal format.
+         *
+         * @return the string representation of the bytes in the ID array
+         */
+        protected String displayBytes() {
+            StringBuilder sb = new StringBuilder();
+            for (byte b :getID()) {
+                sb.append(String.format("%02X", b));
+            }
+            return sb.toString();
+        }
+            
+        /**
          * Returns the length of the payload.
          *
          * @return the length of the payload
@@ -173,29 +193,29 @@ public class Message {
                 if (out == null) {
                     throw new IOException("out is null");
                 }
-                this.type = 0;
+                int type = 0;
                 if (this instanceof Search) {
-                    this.type = 1;
+                    type = 1;
                 }
                 if (this instanceof Response) {
-                    this.type = 2;
+                    type = 2;
                 }
-                if (this.type == 0) {
+                if (type == 0) {
                     throw new IOException("Invalid Type");
                 }
-                out.writeBytes(intToBytes(this.type, 1), 1);
+                out.writeBytes(intToBytes(type, 1), 1);
                 out.writeBytes(this.getID(), 15);
                 out.writeBytes(intToBytes(this.getTTL(), 1), 1);
                 out.writeBytes(
                     intToBytes(this.getRoutingService().getCode(), 1), 1);
-                if (this.type == 1) {
+                if (type == 1) {
                     byte[] x = ((Search)this).getSearchString()
                     .getBytes(StandardCharsets.US_ASCII);
                     byte[] watchlength = intToBytes(x.length, 2);
                     out.writeBytes(watchlength, 2);
                     out.writeBytes(x, x.length);
                 }
-                if (this.type == 2) {
+                if (type == 2) {
                     //System.out.println(getPayloadLength());
                     out.writeBytes(intToBytes(getPayloadLength(), 2), 2);
                     assert this instanceof Response;
@@ -317,23 +337,23 @@ public class Message {
             this.routingService = routingService;
             return this;
         }
-
+        
         /**
          * Returns the type of the message.
-         *
-         * @return the type of the message
+         * 
+         * @return the message type:
+         *         - 1 if the message is of type Search
+         *         - 2 if the message is of type Response
+         *         - 0 if error
          */
-        public int getType() {
-            return this.type;
-        }
-
-        /**
-         * Sets the type of the message.
-         *
-         * @param type the type of the message
-         */
-        public void setType(int type) {
-            this.type = type;
+        public int getMessageType() {
+            if (this instanceof Search) {
+                return 1;
+            }
+            if (this instanceof Response) {
+                return 2;
+            }
+            return 0;
         }
 
         /**
@@ -351,11 +371,8 @@ public class Message {
             if (o == null || getClass() != o.getClass()) return false;
 
             Message message = (Message) o;
-
-            if (type != message.type) return false;
             if (ttl != message.ttl) return false;
-            if (msgID != null ? !msgID.equals(message.msgID)
-            : message.msgID != null) return false;
+            if (!Objects.equals(msgID, message.msgID)) return false;
             return routingService == message.routingService;
         }
 
@@ -368,7 +385,7 @@ public class Message {
          */
         @Override
         public int hashCode() {
-            int result = type;
+            int result = 10;
             result = 31 * result + (msgID != null ? msgID.hashCode() : 0);
             result = 31 * result + ttl;
             result = 31 * result + (routingService != null 

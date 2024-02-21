@@ -8,7 +8,7 @@
 
 package klab.serialization;
 public class BadAttributeValueException extends Exception {
-    private String attribute;
+    private final String attribute;
     /**
      * Constructs a new BadAttributeValueException with the specified message and attribute.
      *

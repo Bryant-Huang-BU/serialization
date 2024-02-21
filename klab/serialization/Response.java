@@ -43,7 +43,7 @@ public class Response extends Message {
                 "msgID, routingService, responseHost");
             }
             setResponseHost(responseHost);
-            List resultList = new java.util.ArrayList<Result>();
+            List<Result> resultList = new java.util.ArrayList<Result>();
             setResultList(resultList);
             setPayloadLength(7);
         } catch (BadAttributeValueException e) {
@@ -72,11 +72,8 @@ public class Response extends Message {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Response: ID=");
-        for (byte b : getID()) {
-            if (b < 10) {
-                sb.append("0");
-            }
-            sb.append(b);
+        for (byte b :getID()) {
+            sb.append(String.format("%02X", b));
         }
         String hostInfo = String.format("%s:%d", responseHost.getAddress().
         getHostAddress(), responseHost.getPort());
@@ -227,20 +224,22 @@ public class Response extends Message {
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Response response = (Response) o;
-
         if (matches != response.matches) {
             return false;
         }
-        if (responseHost != null ? !responseHost.equals
-        (response.responseHost) : response.responseHost != null) {
+        if (responseHost != null ? !responseHost.equals(response.
+        responseHost) : response.responseHost != null) {
             return false;
         }
-        return resultList != null ? resultList.equals
-        (response.resultList) : response.resultList == null;
+        return resultList != null ? resultList.equals(response.resultList) 
+        : response.resultList == null;
     }
 
     /**
@@ -253,8 +252,7 @@ public class Response extends Message {
     @Override
     public int hashCode() {
         int result = responseHost != null ? responseHost.hashCode() : 0;
-        result = 31 * result + 
-        (resultList != null ? resultList.hashCode() : 0);
+        result = 31 * result + (resultList != null ? resultList.hashCode() : 0);
         result = 31 * result + matches;
         return result;
     }
