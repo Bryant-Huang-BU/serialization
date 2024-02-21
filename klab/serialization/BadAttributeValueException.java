@@ -7,7 +7,14 @@
 ************************************************/
 
 package klab.serialization;
-public class BadAttributeValueException extends Exception {
+
+import java.io.Serial;
+import java.io.Serializable;
+
+public class BadAttributeValueException extends Exception implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = -8352932632237503193L;
     private String attribute;
     /**
      * Constructs a new BadAttributeValueException with the specified message and attribute.

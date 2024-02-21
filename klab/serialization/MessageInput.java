@@ -8,8 +8,8 @@
 
 package klab.serialization;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.Object;
@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
  * four bytes, bytes, and strings.
  */
 public class MessageInput extends Object {
-    private DataInputStream in; 
+    private BufferedInputStream in; 
     /**
      * Constructs a new MessageInput object with the specified input stream.
      * 
@@ -32,7 +32,7 @@ public class MessageInput extends Object {
             if (in == null) { //check to see if in is null
                 throw new IOException("in is null"); //throw exception
             }
-            this.in = new DataInputStream(in); //set in to new DataInputStream
+            this.in = new BufferedInputStream(in); //set in to new DataInputStream
     }
 
     /**
@@ -51,20 +51,13 @@ public class MessageInput extends Object {
             if (len < 0) {
                 throw new IOException("Length is less than 0");
             } //input sanitization
-            byte[] bytes = new byte[len];
-            in.readNBytes(bytes,0, len);
+            byte[] bytes = in.readNBytes(len);
             //System.out.println(len);
             /*for (byte b : bytes) {
                 System.out.print(b);
             }*/
             if (bytes.length != len) {
                 throw new IOException("Invalid Bytes");
-            } //input sanitization
-            if (len == 0) {
-                throw new IOException("No bytes to read");
-            } //input sanitization
-            if (len < 0) {
-                throw new IOException("Length is less than 0");
             } //input sanitization
             return bytes;
         }
@@ -150,27 +143,4 @@ public class MessageInput extends Object {
         }
      }
 
-        /**
-         * Reads a string with the specified size from the input stream.
-         * 
-         * @param size the size of the string to read
-         * @return a byte array containing the read string
-         * @throws IOException if an I/O error occurs
-         */
-        public byte[] readStringWithSize(int size) throws IOException {
-            try {
-                ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-                int readBytes;
-                while ((readBytes = in.read()) != -1 && bytes.size() < size) {
-                    bytes.write((char) readBytes);
-                    //System.out.println((char) readBytes);
-                }
-                
-                //System.out.println(bytes.toString());
-                return bytes.toByteArray();
-                
-            } catch (IOException e) {
-                throw new IOException(e.getMessage());
-            }
-        }
-    }
+}

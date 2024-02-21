@@ -7,6 +7,8 @@
 ************************************************/
 
 package klab.serialization;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.Object;

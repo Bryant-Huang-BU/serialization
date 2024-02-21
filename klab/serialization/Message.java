@@ -1,3 +1,9 @@
+/************************************************
+* Author: Bryant Huang
+* Assignment: Program 1
+* Class: CSI4321
+************************************************/
+
 package klab.serialization;
 
 import java.io.IOException;
@@ -214,7 +220,6 @@ public class Message {
             StringBuilder sb = new StringBuilder();
             for (byte b : getID()) {
                 sb.append(String.format("%02X", b));
-               // sb.append(Integer.toHexString(b & 0xFF));
             }
             return sb.toString();
         }
@@ -323,11 +328,11 @@ public class Message {
             return routingService;
         }
         /**
-             * Sets the routing service for the message.
-             *
-             * @param routingService the routing service to set
-             * @return the updated message object
-             */
+         * Sets the routing service for the message.
+         *
+         * @param routingService the routing service to set
+         * @return the updated message object
+         */
         public Message setRoutingService(RoutingService routingService) throws BadAttributeValueException {
             if (routingService == null) {
                 throw new BadAttributeValueException("routingService is null", "routingService");

@@ -16,8 +16,6 @@ import java.util.Objects;
  */
 public class Search extends Message {
     private String searchString;
-    private RoutingService routingService;
-    private int ttl;
 
     /**
      * Constructs a Search object with the specified parameters.
@@ -69,6 +67,10 @@ public class Search extends Message {
         if (searchString == null) {
             throw new klab.serialization.BadAttributeValueException
             ("searchString is null", "searchString");
+        }
+        if (searchString.length() > 65535) {
+            throw new klab.serialization.BadAttributeValueException
+            ("searchString is too big", "searchString");
         }
         //only alphanumeric characters and spaces, only -, _, . are allowed
         if (!searchString.matches("[a-zA-Z0-9._-]*")) {

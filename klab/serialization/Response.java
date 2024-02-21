@@ -43,7 +43,7 @@ public class Response extends Message {
                 "msgID, routingService, responseHost");
             }
             setResponseHost(responseHost);
-            List resultList = new java.util.ArrayList<Result>();
+            List<Result> resultList = new java.util.ArrayList<>();
             setResultList(resultList);
             setPayloadLength(7);
         } catch (BadAttributeValueException e) {
@@ -72,12 +72,7 @@ public class Response extends Message {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Response: ID=");
-        for (byte b : getID()) {
-            if (b < 10) {
-                sb.append("0");
-            }
-            sb.append(b);
-        }
+        sb.append(displayBytes());
         String hostInfo = String.format("%s:%d", responseHost.getAddress().
         getHostAddress(), responseHost.getPort());
         //System.out.println(getTTL());
