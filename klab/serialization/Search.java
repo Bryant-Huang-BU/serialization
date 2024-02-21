@@ -5,6 +5,10 @@
 ************************************************/
 
 package klab.serialization;
+
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * The Search class represents a search operation in the system.
  * It extends the Message class and encapsulates the search string,
@@ -29,7 +33,6 @@ public class Search extends Message {
     String searchString) throws BadAttributeValueException {
         super(msgID, ttl, routingService); 
         // Add this line to invoke the super class constructor
-        setType(0);
         setSearchString(searchString);
     }
 
@@ -54,27 +57,6 @@ public class Search extends Message {
     }
 
     /**
-     * Returns a string representation of the bytes in the ID array.
-     * If a byte is a single digit, a leading zero is added.
-     * The representation is in decimal format.
-     *
-     * @return the string representation of the bytes in the ID array
-     */
-    private String displayBytes() {
-        StringBuilder sb = new StringBuilder();
-        //if double digit, need a 0 in front
-        for (byte b : getID()) {
-            if (b < 10) {
-                sb.append("0");
-            }
-            //show decimal, not hex
-            sb.append(b);
-        }
-        return sb.toString();
-    }
-
-
-    /**
      * Sets the search string.
      * 
      * @param searchString the search string to be set
@@ -97,12 +79,28 @@ public class Search extends Message {
         this.searchString = searchString;
         return this;
     }
+    @Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Search)) return false;
+    Search search = (Search) o;
+    return getTTL() == search.getTTL() &&
+        getRoutingService() == search.getRoutingService() &&
+        Arrays.equals(getID(), search.getID()) &&
+        Objects.equals(getSearchString(), search.getSearchString());
+}
 
-    /*public static String printBytesInHex(byte[] bytes) {
+@Override
+public int hashCode() {
+    int result = Objects.hash(getID(), getSearchString(), getRoutingService());
+    result = 31 * result + getTTL();
+    return result;
+}
+    public static String printBytesInHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {
             sb.append(String.format("%02X", b));
         }
         return sb.toString();
-    }*/
+    }
 }

@@ -147,6 +147,7 @@ public class tests {
                 () -> assertEquals(3, r.getTTL()), () -> assertEquals(RoutingService.BREADTHFIRST, r.getRoutingService()),
                 () -> assertEquals(sb.toString(), r.getSearchString()));
     }
+
     @Test
     public void testResponseEncode() throws BadAttributeValueException, IOException {
         byte[] enc = new byte[] {2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 4, 0, 0, 3, 1, 0, 23, (byte) 192, (byte) 168, 1, 5, 1, 2, 3, 4, 0, 0, 0, 30, 'f', 'o', 'o', '\n'};

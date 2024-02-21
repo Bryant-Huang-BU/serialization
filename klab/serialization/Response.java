@@ -227,20 +227,23 @@ public class Response extends Message {
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Response response = (Response) o;
-
-        if (matches != response.matches) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof Response)) {
             return false;
         }
-        if (responseHost != null ? !responseHost.equals
-        (response.responseHost) : response.responseHost != null) {
-            return false;
+        Response r = (Response) o;
+        boolean flag = true;
+        if (r.hashCode() != this.hashCode()) {
+            flag = false;
         }
-        return resultList != null ? resultList.equals
-        (response.resultList) : response.resultList == null;
+        for (Result res : r.getResultList()) {
+            if (!this.getResultList().contains(res)) {
+                flag = false;
+            }
+        }
+        return flag && r.getTTL() == this.getTTL() && this.getResponseHost().equals(r.getResponseHost()) && r.getRoutingService().equals(this.getRoutingService()) && r.getMatches() == this.getMatches();
     }
 
     /**
@@ -252,9 +255,12 @@ public class Response extends Message {
         */
     @Override
     public int hashCode() {
-        int result = responseHost != null ? responseHost.hashCode() : 0;
-        result = 31 * result + 
-        (resultList != null ? resultList.hashCode() : 0);
+        int result = 17;
+        result = 31 * result + getID().hashCode();
+        result = 31 * result + getTTL();
+        result = 31 * result + getRoutingService().hashCode();
+        result = 31 * result + responseHost.hashCode();
+        result = 31 * result + resultList.hashCode();
         result = 31 * result + matches;
         return result;
     }
