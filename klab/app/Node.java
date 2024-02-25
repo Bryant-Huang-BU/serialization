@@ -1,13 +1,18 @@
 package klab.app;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-
+import java.util.logging.*;
+import klab.app.*;
 import klab.serialization.*;
+import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 /*
  * Implement a node that makes a tcp connection to another Node
@@ -20,60 +25,66 @@ import java.util.Scanner;
 public class Node {
     private static final String EXIT = "exit";
     private static final String PROMPT = "Enter search string or exit: ";
-    InetSocketAddress address; 
+    InetSocketAddress address;
+    Socket socket;
+    int id;
 
     public static void main(String[] args) throws IOException, BadAttributeValueException{
-        if (args.length != 3) {
-            System.err.println("Usage: java Node <search string> <host> <port>");
-            System.exit(1);
-        }
-        if (args[0] == null || args[1] == null || args[2] == null) {
-            System.err.println("Usage: java Node <search string> <host> <port>");
-            System.exit(1);
-        }
-        if (args[0].isEmpty() || args[1].isEmpty() || args[2].isEmpty()) {
-            System.err.println("Usage: java Node <search string> <host> <port>");
-            System.exit(1);
-        }
-        if ((args[1].matches("^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"))) {
-            System.err.println("Not a valid ip number!");
-            System.exit(1);
-        }
-        if (Integer.parseInt(args[2]) > 65535 || Integer.parseInt(args[2]) < 0) {
-            System.err.println("Not a valid port number!");
-            System.exit(1);
-        }
+        Logger logger = Logger.getLogger(Node.class.getName());
+        logger.setLevel(Level.ALL);
+        Handler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.ALL);
+        logger.addHandler(consoleHandler);
+        Formatter formatter = new SimpleFormatter();
+        consoleHandler.setFormatter(formatter);
+        logger.log(Level.INFO, "Node started");
+        InetSocketAddress address = new InetSocketAddress(args[1], Integer.parseInt(args[2]));
+        Node node = new Node(address);
+        PrintWriter out = new PrintWriter(node.getSocket().getOutputStream(), true);
+        BufferedReader in = new BufferedReader(new InputStreamReader(node.getSocket().getInputStream()));
+        Thread t = new Thread(new SearchManagement(logger, node.getSocket()));
+        t.start();
+        node.getSocket().close();
+        
+    }
+    public Node (InetSocketAddress address) throws IOException {
+        this.address = address;
+        this.socket = new Socket(this.address.getAddress(), this.address.getPort());
+        id = 0;
+    }
+    public Socket getSocket() {
+        return socket;
+    }
 
-        Socket socket = new Socket(args[1], Integer.parseInt(args[2]));
-        PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        Search search = new Search(new byte[4], 50, RoutingService.DEPTHFIRST, args[0] == null ? "" : args[0]);
-        try (Scanner sc = new Scanner(System.in)) {
-            String input;
+    public void incID() {
+        this.id++;
+    }
 
-            while (true) {
-                System.out.print("Enter search string or 'exit' to close connection: ");
-                input = sc.nextLine();
-                if (input.equalsIgnoreCase(EXIT)) {
-                    out.println(input);
-                    break;
-                } else {
-                    out.println(input);
-                }
+    public void sendSearch(String searchString) {
+        try {
+            MessageOutput out = new MessageOutput(socket.getOutputStream());
+            Search searchObj = new Search(genID(searchString), 50, RoutingService.DEPTHFIRST, searchString);
+            out.println(searchObj.encode());
+            inputLine = in.readLine();
+            logger.log(Level.INFO, "Received: " + inputLine);
+        } catch (BadAttributeValueException e) {
+            logger.log(Level.SEVERE, "BadAttributeValueException: " + e.getMessage());
+        }
+    }
+
+    private List<Result> searchForFileDepthFirst(Logger logger, String searchString) {
+        File currentDirectory = new File(".");
+        File[] files = currentDirectory.listFiles();
+        for (File file : files) {
+            if (file.isFile() && file.getName().equals("example.txt")) {
+                logger.log(Level.INFO, "Found file: " + file.getAbsolutePath());
+                files.add(new Result())
+            }
+            else if (file.isDirectory()) {
+                logger.log(Level.INFO, "Searching directory: " + file.getAbsolutePath());
+                searchForFileDepthFirst(logger, file.getAbsolutePath());
             }
         }
-        socket.close();
-    }
-    public Node (InetSocketAddress address) {
-        this.address = address;
-    }
 
-    public byte[] genID(String args) {
-        //gen id
-        byte[] id = new byte[4];
-        for (int i = 0; i < 4; i++) {
-            id[i] = (byte) ((Math.random() * 255) + args.hashCode());
-        }
-        return id;
     }
 }
