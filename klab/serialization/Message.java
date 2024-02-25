@@ -237,13 +237,7 @@ public class Message {
                 throw new IOException("Bad Write Function");
             }
         }
-        protected String displayBytes() {
-            StringBuilder sb = new StringBuilder();
-            for (byte b : getID()) {
-                sb.append(String.format("%02X", b));
-            }
-            return sb.toString();
-        }
+
 
         /**
          * Returns the type of the message.

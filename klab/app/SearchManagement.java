@@ -36,13 +36,5 @@ public class SearchManagement implements Runnable{
         set(x);
     }
 
-    private intToBytes(int len, int id) {
-        byte[] bytes = new byte[len];
-        for (int i = len - 1; i >= 0; i--) {
-            bytes[i] = (byte) (id & 0xff);
-            id >>= 8; 
-        }
-        System.out.println("Bytes: " + bytes.toString());
-        return bytes;
-    }    
+   
 }

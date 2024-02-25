@@ -1,4 +1,4 @@
-package klab.app;
+                                                                                                                                                                                                                                                                                  package klab.app;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -71,7 +71,15 @@ public class Node {
             logger.log(Level.SEVERE, "BadAttributeValueException: " + e.getMessage());
         }
     }
-
+    public static byte[] intToBytes(int len, int id) {
+        byte[] bytes = new byte[len];
+        for (int i = len - 1; i >= 0; i--) {
+            bytes[i] = (byte) (id & 0xff);
+            id >>= 8; 
+        }
+        //System.out.println("Bytes: " + bytes.toString());
+        return bytes;
+    }    
     private List<Result> searchForFileDepthFirst(Logger logger, String searchString) {
         File currentDirectory = new File(".");
         File[] files = currentDirectory.listFiles();
