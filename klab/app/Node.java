@@ -28,6 +28,7 @@ public class Node {
     InetSocketAddress address;
     Socket socket;
     int id;
+    
 
     public static void main(String[] args) throws IOException, BadAttributeValueException{
         Logger logger = Logger.getLogger(Node.class.getName());
@@ -40,10 +41,9 @@ public class Node {
         logger.log(Level.INFO, "Node started");
         InetSocketAddress address = new InetSocketAddress(args[1], Integer.parseInt(args[2]));
         Node node = new Node(address);
-        PrintWriter out = new PrintWriter(node.getSocket().getOutputStream(), true);
-        BufferedReader in = new BufferedReader(new InputStreamReader(node.getSocket().getInputStream()));
-        Thread t = new Thread(new SearchManagement(logger, node.getSocket()));
-        t.start();
+        Thread tS = new Thread(new SearchManagement(logger, node.getSocket()));
+        tS.start();
+        Thread tR = new Thread(new ResponseManagement(logger, node.getSocket())); 
         node.getSocket().close();
         
     }
@@ -60,13 +60,13 @@ public class Node {
         this.id++;
     }
 
-    public void sendSearch(String searchString) {
+    public void sendSearch(String searchString, Socket socket, Logger logger) throws IOException {
         try {
+            //write search byte array to socket
             MessageOutput out = new MessageOutput(socket.getOutputStream());
-            Search searchObj = new Search(genID(searchString), 50, RoutingService.DEPTHFIRST, searchString);
-            out.println(searchObj.encode());
-            inputLine = in.readLine();
-            logger.log(Level.INFO, "Received: " + inputLine);
+            Search searchObj = new Search(intToBytes(id, 15), 50, RoutingService.DEPTHFIRST, searchString);
+            searchObj.encode(out);
+            logger.log(Level.INFO, "Sent: " + searchObj.toString());
         } catch (BadAttributeValueException e) {
             logger.log(Level.SEVERE, "BadAttributeValueException: " + e.getMessage());
         }
@@ -87,4 +87,14 @@ public class Node {
         }
 
     }
+
+    public static byte[] intToBytes(int len, int id) {
+        byte[] bytes = new byte[len];
+        for (int i = len - 1; i >= 0; i--) {
+            bytes[i] = (byte) (id & 0xff);
+            id >>= 8; 
+        }
+        System.out.println("Bytes: " + bytes.toString());
+        return bytes;
+    }    
 }
