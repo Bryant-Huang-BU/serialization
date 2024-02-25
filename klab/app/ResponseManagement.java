@@ -11,19 +11,21 @@ public class ResponseManagement implements Runnable {
     int id;
     Logger logger;
     Socket socket;
-    public ResponseManagement(Logger log, Socket sock) {
+    String searchDir;
+    public ResponseManagement(Logger log, Socket sock, String searchDir) {
         id = 0;
         this.logger = log;
         this.socket = sock;
+        this.searchDir = searchDir;
     }
-    public void set() {
+    @Override
+    public void run() {
         logger.info("Response Management thread running");
         while (true) {
             try {
                 //read msg from socket
-                
                 MessageInput in = new MessageInput(socket.getInputStream());
-                Message msg = Message.decode(in); //if not either, 
+                Message msg = Message.decode(in); //if not either,
                 //it should throw an exception anyways
                 if (msg instanceof Response) {
                     logger.info("Received: " + msg.toString());
@@ -42,10 +44,6 @@ public class ResponseManagement implements Runnable {
                 Thread.currentThread().interrupt();
             }
         }
-    }
-    @Override
-    public void run() {
-        set();
     }
 
     private void processResponse(Response r) {
@@ -66,7 +64,7 @@ public class ResponseManagement implements Runnable {
         //find file in local directory
         InetSocketAddress hostaddr = new InetSocketAddress(socket.getLocalAddress(), socket.getLocalPort());
         Response r = new Response(s.getID(), s.getTTL(), s.getRoutingService(), hostaddr);
-        File currDir = new File(".");
+        File currDir = new File(searchDir);
         //List<String> fileNames = new ArrayList<>();
         File[] files = currDir.listFiles((dir, name) -> name.contains(s.getSearchString()));
         if (files != null) {

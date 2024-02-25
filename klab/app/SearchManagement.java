@@ -1,6 +1,7 @@
 package klab.app;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -16,7 +17,8 @@ public class SearchManagement implements Runnable{
         this.logger = log;
         this.socket = s;
     }
-    public void set() {
+    @Override
+    public void run() {
         logger.info("Search Management thread running");
         while (true) {
             try {
@@ -27,21 +29,22 @@ public class SearchManagement implements Runnable{
                     break;
                 }
                 sendSearch(input);
+                sc.close();
+                System.out.println("Search sent");
             } catch (Exception e) {
-                logger.severe("Search Management thread interrupted");
+                logger.severe("Search Management thread interrupted by " + e.getMessage());
                 Thread.currentThread().interrupt();
+                return;
             }
         }
-    }
-    @Override
-    public void run() {
-        set();
+        Thread.currentThread().interrupt();
     }
 
     public void sendSearch(String searchString) throws IOException {
         try {
             //write search byte array to socket
-            MessageOutput out = new MessageOutput(socket.getOutputStream());
+            PrintWriter outp = new PrintWriter(echoSocket.getOutputStream(), true);
+            MessageOutput out = new MessageOutput(outp);
             Search searchObj = new Search(Node.intToBytes(id, 15), 50, RoutingService.DEPTHFIRST, searchString);
             id++;
             searchObj.encode(out);
