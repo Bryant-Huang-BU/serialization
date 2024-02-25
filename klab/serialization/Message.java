@@ -238,7 +238,6 @@ public class Message {
             }
         }
 
-
         /**
          * Returns the type of the message.
          * 
@@ -256,6 +255,7 @@ public class Message {
             }
             return 0;
         }
+
         /**
          * Converts an integer to a byte array of specified length.
          *

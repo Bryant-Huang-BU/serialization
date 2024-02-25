@@ -1,19 +1,9 @@
-                                                                                                                                                                                                                                                                                  package klab.app;
-
-import java.io.BufferedReader;
-import java.io.File;
+package klab.app;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.logging.*;
-import klab.app.*;
 import klab.serialization.*;
-import java.util.UUID;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 /*
  * Implement a node that makes a tcp connection to another Node
  * until termination and completely ascynchronously, prints responses to console and response to searches from other Node
@@ -23,29 +13,32 @@ import java.util.Scanner;
  * 
  */
 public class Node {
-    private static final String EXIT = "exit";
-    private static final String PROMPT = "Enter search string or exit: ";
     InetSocketAddress address;
     Socket socket;
     int id;
+    
 
     public static void main(String[] args) throws IOException, BadAttributeValueException{
+        if (args.length != 3) {
+            throw new IllegalArgumentException("Parameter(s): <Search Directory> <Neighbor Node> <Neighbor Port>");
+        }
         Logger logger = Logger.getLogger(Node.class.getName());
         logger.setLevel(Level.ALL);
-        Handler consoleHandler = new ConsoleHandler();
-        consoleHandler.setLevel(Level.ALL);
-        logger.addHandler(consoleHandler);
-        Formatter formatter = new SimpleFormatter();
-        consoleHandler.setFormatter(formatter);
         logger.log(Level.INFO, "Node started");
         InetSocketAddress address = new InetSocketAddress(args[1], Integer.parseInt(args[2]));
         Node node = new Node(address);
-        PrintWriter out = new PrintWriter(node.getSocket().getOutputStream(), true);
-        BufferedReader in = new BufferedReader(new InputStreamReader(node.getSocket().getInputStream()));
-        Thread t = new Thread(new SearchManagement(logger, node.getSocket()));
-        t.start();
-        node.getSocket().close();
+        String searchDir = args[0];
+        System.out.println(searchDir);
+        if (searchDir == null) {
+            logger.log(Level.SEVERE, "Search directory is null");
+            throw new IllegalArgumentException("Search directory is null");
+        }
+        Thread tS = new Thread(new SearchManagement(logger, node.getSocket()));
+        tS.start();
+        Thread tR = new Thread(new ResponseManagement(logger, node.getSocket(), searchDir)); 
+        //tR.start();
         
+        node.getSocket().close();
     }
     public Node (InetSocketAddress address) throws IOException {
         this.address = address;
@@ -60,39 +53,25 @@ public class Node {
         this.id++;
     }
 
-    public void sendSearch(String searchString) {
+    public void sendSearch(String searchString, Socket socket, Logger logger) throws IOException {
         try {
+            //write search byte array to socket
             MessageOutput out = new MessageOutput(socket.getOutputStream());
-            Search searchObj = new Search(genID(searchString), 50, RoutingService.DEPTHFIRST, searchString);
-            out.println(searchObj.encode());
-            inputLine = in.readLine();
-            logger.log(Level.INFO, "Received: " + inputLine);
+            Search searchObj = new Search(intToBytes(id, 15), 50, RoutingService.DEPTHFIRST, searchString);
+            searchObj.encode(out);
+            logger.log(Level.INFO, "Sent: " + searchObj.toString());
         } catch (BadAttributeValueException e) {
             logger.log(Level.SEVERE, "BadAttributeValueException: " + e.getMessage());
         }
     }
+
     public static byte[] intToBytes(int len, int id) {
         byte[] bytes = new byte[len];
         for (int i = len - 1; i >= 0; i--) {
             bytes[i] = (byte) (id & 0xff);
             id >>= 8; 
         }
-        //System.out.println("Bytes: " + bytes.toString());
+        System.out.println("Bytes: " + bytes.toString());
         return bytes;
     }    
-    private List<Result> searchForFileDepthFirst(Logger logger, String searchString) {
-        File currentDirectory = new File(".");
-        File[] files = currentDirectory.listFiles();
-        for (File file : files) {
-            if (file.isFile() && file.getName().equals("example.txt")) {
-                logger.log(Level.INFO, "Found file: " + file.getAbsolutePath());
-                files.add(new Result())
-            }
-            else if (file.isDirectory()) {
-                logger.log(Level.INFO, "Searching directory: " + file.getAbsolutePath());
-                searchForFileDepthFirst(logger, file.getAbsolutePath());
-            }
-        }
-
-    }
 }

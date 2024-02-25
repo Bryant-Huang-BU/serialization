@@ -1,21 +1,25 @@
 package klab.app;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import klab.serialization.*;
 
 public class SearchManagement implements Runnable{
     int id;
-    Logger log;
-    Socket x;
-    public SearchManagement(Logger log, Socket x) {
+    Logger logger;
+    Socket socket;
+    public SearchManagement(Logger log, Socket s) {
         id = 0;
-        this.log = log;
-        this.x = x;
+        this.logger = log;
+        this.socket = s;
     }
-    public void set(Socket x) {
-        log.info("Search Management thread running");
+    @Override
+    public void run() {
+        logger.info("Search Management thread running");
         while (true) {
             try {
                 Scanner sc = new Scanner(System.in);
@@ -24,17 +28,31 @@ public class SearchManagement implements Runnable{
                     sc.close();
                     break;
                 }
-                Search search = new Search(id, input);
-                x.getOutputStream().write(input.getBytes());
+                sendSearch(input);
+                sc.close();
+                System.out.println("Search sent");
             } catch (Exception e) {
-                log.severe("Search Management thread interrupted");
+                logger.severe("Search Management thread interrupted by " + e.getMessage());
+                Thread.currentThread().interrupt();
+                return;
             }
         }
-    }
-    @Override
-    public void run() {
-        set(x);
+        Thread.currentThread().interrupt();
     }
 
-   
+    public void sendSearch(String searchString) throws IOException {
+        try {
+            //write search byte array to socket
+            PrintWriter outp = new PrintWriter(echoSocket.getOutputStream(), true);
+            MessageOutput out = new MessageOutput(outp);
+            Search searchObj = new Search(Node.intToBytes(id, 15), 50, RoutingService.DEPTHFIRST, searchString);
+            id++;
+            searchObj.encode(out);
+            logger.log(Level.INFO, "Sent: " + searchObj.toString());
+        } catch (BadAttributeValueException e) {
+            logger.log(Level.SEVERE, "BadAttributeValueException: " + e.getMessage());
+            Thread.currentThread().interrupt();
+        }
+    }
+    
 }
