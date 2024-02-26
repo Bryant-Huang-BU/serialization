@@ -1,78 +1,101 @@
 package klab.app;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 
 import klab.serialization.*;
 
 public class ResponseManagement implements Runnable {
-    int id;
-    Logger logger;
+    long id;
     Socket socket;
     String searchDir;
-    public ResponseManagement(Logger log, Socket sock, String searchDir) {
+    public ResponseManagement(Socket sock, String searchDir) {
         id = 0;
-        this.logger = log;
         this.socket = sock;
         this.searchDir = searchDir;
     }
     @Override
     public void run() {
-        logger.info("Response Management thread running");
+        Node.LOGGER.info("Response Management thread running");
         while (true) {
             try {
-                //read msg from socket
+                File currDir = new File(searchDir);
+                //List<String> fileNames = new ArrayList<>();
+                List<Result> p = new ArrayList<>();
+                File[] files = currDir.listFiles();
                 MessageInput in = new MessageInput(socket.getInputStream());
                 Message msg = Message.decode(in); //if not either,
-                //it should throw an exception anyways
                 if (msg instanceof Response) {
-                    logger.info("Received: " + msg.toString());
+                    Node.LOGGER.info("Received: " + msg.toString());
                     Response r = (Response) msg;
                     processResponse(r);
                 }
                 else if (msg instanceof Search) {
-                    logger.info("Received: " + msg.toString());
+                    Node.LOGGER.info("Received: " + msg.toString());
                     Search s = (Search) msg;
                     Response r = findFile(s);
                     r.encode(new MessageOutput(socket.getOutputStream()));
                 }
-
             } catch (Exception e) {
-                logger.severe("Search Management thread interrupted");
-                Thread.currentThread().interrupt();
+                Node.LOGGER.severe("Search Management thread interrupted");
+                try {
+                    socket.close();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+                return;
             }
         }
     }
 
     private void processResponse(Response r) {
         //process response
-        System.out.println("Search msg for " + " : "); 
-        //TODO: get search string
-        System.out.println("Download Host: " + 
-        r.getResponseHost().getAddress() + ":" + 
-        r.getResponseHost().getPort());
-        for(int i = 0; i < r.getResultList().size(); i++) {
-            System.out.println(r.getResultList().get(i).getFileName()
-             + ": ID " + r.getResultList().get(i).getFileID().toString()
-              + " (" + r.getResultList().get(i).getFileSize() + " bytes)");
+        String searchStr = "";
+        //System.out.println(Node.sharedSearchList.size());
+        for (Search s : Node.getSList()) {
+            //System.out.println(s.toString());
+            //check to see if the search ID matches the response ID
+            boolean flag = true;
+            for (int i = 0; i < s.getID().length; i++) {
+                if (s.getID()[i] != r.getID()[i]) {
+                    //System.out.println("Search ID does not match response ID");
+                    flag = false;
+                }
+            }
+            //System.out.println(s.getSearchString());
+            if (flag) {
+                //System.out.println(s.getSearchString());
+                searchStr = s.getSearchString();
+                Node.removeFromSList(s);
+                break;
+            }
         }
-    }
-
+            if (!searchStr.isEmpty()) {
+                System.out.println("Search msg for " + searchStr + ": ");
+                System.out.println("Download Host: " +
+                        r.getResponseHost().getAddress() + ":" +
+                        r.getResponseHost().getPort());
+                for (Result rt : r.getResultList()) {
+                    StringBuilder sb = new StringBuilder();
+                    for (byte b : rt.getFileID()) {
+                        sb.append(String.format("%02X", b));
+                    }
+                    System.out.print(rt.getFileName() + 
+                    ": ID " + sb.toString() + " (" + rt.getFileSize() + ") bytes");
+                }
+            }
+        }
+    
     private Response findFile(Search s) throws BadAttributeValueException {
         //find file in local directory
         InetSocketAddress hostaddr = new InetSocketAddress(socket.getLocalAddress(), socket.getLocalPort());
         Response r = new Response(s.getID(), s.getTTL(), s.getRoutingService(), hostaddr);
-        File currDir = new File(searchDir);
-        //List<String> fileNames = new ArrayList<>();
-        File[] files = currDir.listFiles((dir, name) -> name.contains(s.getSearchString()));
-        if (files != null) {
-            for (File file : files) {
-                r.addResult(new Result(Node.intToBytes(id, 4), file.length(), file.getName()));
-                id++;
-            }
-        }
         return r;
     }
 }
