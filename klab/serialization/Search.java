@@ -101,12 +101,5 @@ public int hashCode() {
     int result = Objects.hash(getID(), getSearchString(), getRoutingService());
     result = 31 * result + getTTL();
     return result;
-}
-    public static String printBytesInHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02X", b));
-        }
-        return sb.toString();
     }
 }
