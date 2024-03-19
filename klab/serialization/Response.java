@@ -42,7 +42,7 @@ public class Response extends Message {
                 ("msgID, routingService, or responseHost is null",
                 "msgID, routingService, responseHost");
             }
-            setResponseHost(responseHost);
+            setResponseHost(responseHost); //avoid error
             List<Result> resultList = new java.util.ArrayList<>();
             setResultList(resultList);
             setPayloadLength(7);

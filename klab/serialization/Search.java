@@ -31,6 +31,7 @@ public class Search extends Message {
     String searchString) throws BadAttributeValueException {
         super(msgID, ttl, routingService); 
         // Add this line to invoke the super class constructor
+        this.searchString = searchString; //avoid error
         setSearchString(searchString);
     }
 
@@ -71,11 +72,6 @@ public class Search extends Message {
         if (searchString.length() > 65535) {
             throw new klab.serialization.BadAttributeValueException
             ("searchString is too big", "searchString");
-        }
-        //only alphanumeric characters and spaces, only -, _, . are allowed
-        if (!searchString.matches("[a-zA-Z0-9._-]*")) {
-            throw new BadAttributeValueException(
-                "fileName is too long", "fileName");
         }
         //only alphanumeric characters and spaces, only -, _, . are allowed
         if (!searchString.matches("[a-zA-Z0-9._-]*")){
