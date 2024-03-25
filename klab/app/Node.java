@@ -121,10 +121,10 @@ public class Node {
         String input = "";
         while (true) {
             try {
-
                 if (sc.hasNextLine()) {
                     input = sc.nextLine();
                     if (input.equals("exit")) {
+                        //stop the thread;
                         sc.close();
                         Node.closeSocket();
                         break;
@@ -149,7 +149,10 @@ public class Node {
                 + e.getMessage());
             }
         }
+        tR.interrupt();
+        tS.shutdown();
         sc.close();
+        return;
     }
     /**
      * Represents a node in the network.

@@ -34,7 +34,17 @@ public class MessageInput extends Object {
             }
             this.in = new BufferedInputStream(in); //set in to new DataInputStream
     }
+    
 
+    /**
+     * Checks if there is data available to be read from the input stream.
+     *
+     * @return {@code true} if there is data available, {@code false} otherwise.
+     * @throws IOException if an I/O error occurs.
+     */
+    public boolean isAvail() throws IOException {
+        return in.available() > 0;
+    }
     /**
      * Reads a specified number of bytes from the input 
      * stream starting at the given offset.
