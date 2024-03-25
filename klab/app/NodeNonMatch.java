@@ -1,4 +1,4 @@
-package klab.app;
+dpackage klab.app;
 
 import static klab.serialization.Message.decode;
 import static klab.serialization.RoutingService.BREADTHFIRST;
