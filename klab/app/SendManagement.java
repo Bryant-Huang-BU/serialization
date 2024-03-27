@@ -11,8 +11,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -26,17 +29,17 @@ import klab.serialization.*;
  */
 public class SendManagement implements Runnable{
     Search search;
-    Boolean flag;
+    Socket socket;
     /**
      * Constructs a new SendManagement object with
      * the specified search and flag.
      *
      * @param search the Search object to be used
-     * @param flag   the flag indicating whether to send the management or not
+     * @param socket   the flag indicating whether to send the management or not
      */
-    public SendManagement(Search search, Boolean flag) {
+    public SendManagement(Search search, Socket socket) {
         this.search = search;
-        this.flag = flag;
+        this.socket = socket;
     }
     /**
      * Executes the logic of the SendManagement thread.
@@ -50,22 +53,32 @@ public class SendManagement implements Runnable{
     public void run() {
         Node.LOGGER.info("Send Management thread running");
         try {
-            if (!flag) { //SEND OUT SEARCH
-                //write search byte array to Node.socket
+        if (socket == null) { //SEND OUT SEARCH
+            //write search byte array to Node.socket
+            Base64.Encoder encoder = Base64.getEncoder();
+            String keyString = new String
+                    (encoder.encode(search.getID()));
+            List<Socket> sockets;
+            synchronized (Node.connectionsList) {
+                sockets = new ArrayList<>(Node.connectionsList);
+            }
+            for (Socket sock : sockets) {
                 MessageOutput out = new MessageOutput
-                (Node.socket.getOutputStream());
-                Base64.Encoder encoder = Base64.getEncoder();
-                String keyString = new String
-                (encoder.encode(search.getID()));
+                (sock.getOutputStream());
                 search.encode(out);
                 Node.addToSList(keyString, search.getSearchString());
-                Node.LOGGER.log(Level.INFO, "Sent: " + search.toString());
+                Node.LOGGER.log(Level.INFO, "Sent: " + search.toString() + " to " + sock.getLocalAddress() + ":" + sock.getPort());
             }
-            if (flag) { //SEND OUT RESPONSE
-                Response r = findFile(search);
-                r.encode(new MessageOutput(Node.socket.getOutputStream()));
-                Node.LOGGER.log(Level.INFO, "Sent: " + r.toString());
+        }
+        else { //SEND OUT RESPONSE
+            Response r = findFile(search, socket);
+            r.setTTL(r.getTTL()- 1);
+            if (r.getTTL() < 0) {
+                Node.LOGGER.log(Level.INFO, "TTL at 0");
             }
+            r.encode(new MessageOutput(socket.getOutputStream()));
+            Node.LOGGER.log(Level.INFO, "Sent: " + r.toString());
+        }
         } catch (IOException e) {
             Node.LOGGER.log(Level.WARNING, 
             "Interrupted Due to : " + e.getMessage());
@@ -79,13 +92,13 @@ public class SendManagement implements Runnable{
      * @return the response object containing search results
      * @param s the search object to be used in generating the response
      */
-    private Response findFile(Search s)
+    private Response findFile(Search s, Socket sock)
     throws BadAttributeValueException, UnknownHostException {
         //find file in local directory
         InetSocketAddress hostaddr = new
                 InetSocketAddress(
                 Inet4Address.getLocalHost().getHostAddress()
-                , Node.socket.getLocalPort());
+                , Node.downloadPort);
         if (s.getSearchString() == null) {
             return null;
         }

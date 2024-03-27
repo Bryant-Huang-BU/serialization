@@ -60,17 +60,38 @@ public class MessageInput extends Object {
             //check if stream ends unexpectdly
             if (len < 0) {
                 throw new IOException("Length is less than 0");
-            } //input sanitization
+            } 
+            byte[] bytes = new byte[len];
+            int readBytes = 0;
+            int chunkSize = 1024;
+            int remainingBytes = len;
+            while (remainingBytes > 0) {
+                int chunkSizeToRead = Math.min(remainingBytes, chunkSize);
+                int bytesRead = in.read(bytes, readBytes, chunkSizeToRead);
+                if (bytesRead < 0) {
+                    throw new IOException("End of stream reached");
+                }
+                readBytes += bytesRead;
+                remainingBytes -= bytesRead;
+            }
+            if (remainingBytes != 0) {
+                throw new IOException("Invalid Bytes");
+            }
+            return bytes;
+        }
+            //input sanitization
+            /*
             byte[] bytes = in.readNBytes(len);
             //System.out.println(len);
             /*for (byte b : bytes) {
                 System.out.print(b);
-            }*/
+            }
             if (bytes.length != len) {
                 throw new IOException("Invalid Bytes");
             } //input sanitization
-            return bytes;
-        }
+            re
+            turn bytes;
+        }*/
         catch (IOException e) {
             throw new IOException("Invalid Bytes");
         }
