@@ -1,4 +1,4 @@
-package klab.app.donatest;
+package klab.serialization.test;
 
 import static klab.serialization.Message.decode;
 import static klab.serialization.RoutingService.BREADTHFIRST;

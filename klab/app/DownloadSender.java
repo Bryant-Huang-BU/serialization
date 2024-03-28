@@ -1,15 +1,22 @@
+/************************************************
+ *
+ * Author: Bryant Huang
+ * Assignment: Program 3
+ * Class: CSI4321
+ *
+ ************************************************/
 package klab.app;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.System.Logger.Level;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 /**
- * This class implements a simple client that downloads a file from a server.
+ * The DownloadSender class is responsible for sending a file to a server.
+ * It implements the Runnable interface to allow for concurrent execution.
  */
 public class DownloadSender implements Runnable {
     private Socket socket;
@@ -18,7 +25,8 @@ public class DownloadSender implements Runnable {
     private String filename;
     byte[] fileid;
     /**
-    * Constructs a new FileDownloader with the given IP address and port number.
+    * Constructs a new FileDownloader with the given IP
+    * address and port number.
     * @param ip the IP address of the server
     * @param port the port number to connect to
     * @param filename the name of the file to download
@@ -39,8 +47,11 @@ public class DownloadSender implements Runnable {
     }
 
     /**
-    * Disconnects from the server and closes the socket.
-    */
+        * Disconnects from the server by closing the input 
+        * and output streams and the socket.
+        * Any exceptions that occur during the disconnection'
+        * process are handled internally.
+        */
     public void disconnect() {
         try {
             // Close the input and output streams
@@ -53,13 +64,19 @@ public class DownloadSender implements Runnable {
         }
     }
 
+    /**
+     * Executes the file transfer process.
+     * Sends the file to the server and receives the response.
+     * If the response is "ok", the file transfer is successful.
+     * Otherwise, the connection is disconnected.
+     */
     @Override
     public void run() { //USE TRANSFER TO SEND FILE
         try {
             // Send the file name to the server
             output.write(fileid);
             String newline = "\n"; 
-            output.write(newline.getBytes(StandardCharsets.UTF_8));
+            output.write(newline.getBytes(StandardCharsets.US_ASCII));
             output.flush();
             while (input.available() == 0) {
                 // Wait for the server to respond
@@ -76,7 +93,6 @@ public class DownloadSender implements Runnable {
                     while ((bytesRead = 
                     input.read(buffer2)) != -1) {
                         output.write(buffer2, 0, bytesRead);
-                         bytesTransferred = bytesRead;
                     }
                     output.close();
                 } else {

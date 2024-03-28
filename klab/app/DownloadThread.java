@@ -1,10 +1,16 @@
+/************************************************
+ *
+ * Author: Bryant Huang
+ * Assignment: Program 3
+ * Class: CSI4321
+ *
+ ************************************************/
 package klab.app;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Base64;
 import java.util.Random;
 import java.util.logging.Level;
@@ -15,12 +21,16 @@ public class DownloadThread implements Runnable {
     private Socket socket;
     private byte[] fileid;
 
-    public DownloadThread (Socket socket) 
-    {
+    /**
+     * Represents a thread for downloading a file from a socket connection.
+     * 
+     * @param socket the socket connection to download the file from
+     */
+    public DownloadThread(Socket socket) {
         try {
             this.socket = socket;
             InputStream in = socket.getInputStream();
-            //read the fileid
+            // read the fileid
             this.fileid = new byte[4];
             for (int i = 0; i < 4; i++) {
                 fileid[i] = (byte) in.read();
@@ -28,20 +38,30 @@ public class DownloadThread implements Runnable {
             Base64.Encoder encoder = Base64.getEncoder();
             String id = new String(encoder.encode(fileid));
             System.out.println(id);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Node.LOGGER.warning("Error in DownloadThread: " + e.getMessage());
         }
     }
-    
+
+    /**
+     * Executes the download process in a separate thread. 
+     * This method is called when
+     * the thread is started. It handles the downloading 
+     * and sending of files to the
+     * client. If an error occurs during the process, an 
+     * error message is sent back
+     * to the client.
+     */
     @Override
     public void run() {
         try {
             byte[] payload;
-            Node.LOGGER.log(Level.INFO, "Downloading from: " + socket.getInetAddress().getHostAddress());
-            //find the file
+            Node.LOGGER.log(Level.INFO, "Downloading from: " + 
+            socket.getInetAddress().getHostAddress());
+            // find the file
             if (fileid == null) {
-                Node.LOGGER.log(Level.INFO, "No fileid found for: " + socket.getInetAddress().getHostAddress());
+                Node.LOGGER.log(Level.INFO, "No fileid found for: "
+                 + socket.getInetAddress().getHostAddress());
                 socket.close();
                 return;
             }
@@ -49,11 +69,12 @@ public class DownloadThread implements Runnable {
             if (f == null) {
                 throw new Exception("File not found");
             }
-            //send the file
+            // send the file
             InputStream in = new FileInputStream(f);
             byte[] buffer = new byte[1024];
             int bytesRead;
-            payload = new byte[] {(byte) 'O', (byte) 'K', (byte) '\n', (byte)'\n'};
+            payload = new byte[] { (byte) 'O', 
+            (byte) 'K', (byte) '\n', (byte) '\n' };
             socket.getOutputStream().write(payload, 0, 4);
             while ((bytesRead = in.read(buffer)) != -1) {
                 socket.getOutputStream().write(buffer, 0, bytesRead);
@@ -61,12 +82,12 @@ public class DownloadThread implements Runnable {
             in.close();
             socket.close();
             return;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Node.LOGGER.warning("Error in DownloadThread: " + e.getMessage());
-            Node.LOGGER.log(Level.INFO, "No file found for: " + socket.getInetAddress().getHostAddress());
+            Node.LOGGER.log(Level.INFO, "No file found for: " + 
+            socket.getInetAddress().getHostAddress());
             Byte[] payload;
-            //make payload "Error <Error Message>" and send it
+            // make payload "Error <Error Message>" and send it
             payload = new Byte[6 + e.getMessage().length()];
             payload[0] = (byte) 'E';
             payload[1] = (byte) 'R';
@@ -80,21 +101,29 @@ public class DownloadThread implements Runnable {
                 i++;
             }
             try {
-                //socket.getOutputStream().write(Node.intToByteArray(payload.length));
                 for (i = 0; i < payload.length; i++) {
                     socket.getOutputStream().write(payload[i]);
                 }
                 socket.close();
                 return;
-            }
-            catch (Exception e2) {
-                Node.LOGGER.warning("Error in DownloadThread: " + e2.getMessage());
+            } catch (Exception e2) {
+                Node.LOGGER.warning(
+                "Error in DownloadThread: " + e2.getMessage());
                 return;
             }
         }
     }
-    public File findFile(byte[] fileID) throws UnknownHostException, BadAttributeValueException {
-    //find file in local directory
+
+    /**
+     * Finds a file in the local directory.
+     * 
+     * @param fileID the file ID to be found
+     * @return the file if found, null otherwise
+     * @throws BadAttributeValueException if there 
+     * is an error in the attribute value
+     */
+    public File findFile(byte[] fileID) throws BadAttributeValueException {
+        // find file in local directory
         File currDir = new File(Node.searchDir);
         File[] files = currDir.listFiles();
         byte[] idbyte = new byte[4];
@@ -111,5 +140,5 @@ public class DownloadThread implements Runnable {
         }
         return null;
     }
-    
+
 }

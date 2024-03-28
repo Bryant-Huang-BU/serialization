@@ -6,16 +6,12 @@
  *
  ************************************************/
 package klab.app;
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.*;
@@ -44,11 +40,12 @@ public class Node {
     //public static ServerSocket serverSockets;
     public static ServerSocket serverSocket;
     public static ServerSocket downServer;
-    public static List<Socket> connectionsList = new ArrayList();
+    public static List<Socket> connectionsList;
     public static int downloadPort;
     public static Object myAddr;
     public static ExecutorService eS = Executors.newCachedThreadPool();
-    public static ExecutorService downloadClients = Executors.newCachedThreadPool();
+    public static ExecutorService downloadClients = 
+    Executors.newCachedThreadPool();
 
     int connectCount = 0;
     static {
@@ -137,6 +134,7 @@ public class Node {
         tD.start();
         Thread tC = new Thread(new acceptConnections());
         tC.start();
+        Node.connectionsList = new ArrayList<>();
         Scanner sc = new Scanner(System.in);
         String input = "";
         while (true) {
@@ -311,25 +309,33 @@ public class Node {
      */
     public static synchronized void startSocket(InetSocketAddress i) 
     throws IOException {
-        /*try {
-            //socket.connect(new InetSocketAddress(i.getAddress(), i.getPort()));
-        } catch (IOException e) {
-            throw new IOException("Socket connection failed");
-        }*/
+
     }
+    /**
+     * Returns a list of connections.
+     *
+     * @return a list of connections
+     */
     public static List<Socket> getConnectionsList() {
         synchronized (connectionsList) {
             return new ArrayList<>(connectionsList);
         }
     }
 
+    /**
+     * Represents a network socket connection.
+     * 
+     * @param s the socket connection
+     * @return the socket connection
+     */
     public static synchronized Socket addConnection(Socket s) {
         List<Socket> sockets;
         synchronized (Node.connectionsList) {
             sockets = new ArrayList<>(Node.connectionsList);
         }
             for (Socket socket : sockets) {
-                if (socket.getRemoteSocketAddress().equals(s.getRemoteSocketAddress()) &&
+                if (socket.getRemoteSocketAddress().equals
+                (s.getRemoteSocketAddress()) &&
                         socket.getPort() == s.getPort()) {
                     return null;
                 }
@@ -338,12 +344,22 @@ public class Node {
             Node.eSsubmit(s);
             return s;
     }
+    /**
+     * Removes the specified socket from the connections list.
+     * 
+     * @param socket the socket to be removed
+     */
     public static synchronized void removeConnection(Socket socket) {
         if (connectionsList.contains(socket)) {
             connectionsList.remove(socket);
         }
     }
 
+    /**
+     * Submits a socket to the executor service for processing.
+     *
+     * @param s the socket to be submitted
+     */
     public static synchronized void eSsubmit(Socket s) {
         eS.submit(new UltimateManagement(s));
     }

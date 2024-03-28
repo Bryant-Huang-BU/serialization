@@ -36,11 +36,9 @@ public class Message {
          */
         public Message (byte[] msgID, int ttl, 
         RoutingService routingService) throws BadAttributeValueException {
-            //System.out.println(Arrays.toString(msgID) + " "
-            // + ttl + " " + routingService.getCode());
-            setID(msgID);
-            setTTL(ttl);
-            setRoutingService(routingService);
+            this.setID(msgID);
+            this.setTTL(ttl);
+            this.setRoutingService(routingService);
         }
 
         /**

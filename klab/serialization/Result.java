@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
  * The file information includes the file ID, 
  * file size, and file name.
  */
-public class Result extends Object {
+public class Result {
     private byte[] fileID;
     private long fileSize;
     private String fileName;
@@ -40,11 +40,6 @@ public class Result extends Object {
         if (in == null) {
             throw new IOException("in is null");
         }
-        //byte[] bytes = in.readAllBytes();
-        /*for (int i = 0; i < bytes.length; i++) {
-            System.out.println(bytes[i]);
-        }*/
-        int off = 0;
         //get starting 4 bytes of byte array
         byte[] buf = in.readBytes(4);
         setFileID(buf);
@@ -55,7 +50,7 @@ public class Result extends Object {
         //get next 4 bytes of byte array
         setFileSize(in.readUnsignedInt());
         //System.out.println(bytes.length);
-        String x = new String( in.readString('\n'),
+        String x = new String(in.readString('\n'),
         StandardCharsets.US_ASCII);
         //System.out.println(x);
         setFileName(x);
