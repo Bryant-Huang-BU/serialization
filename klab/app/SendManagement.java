@@ -25,26 +25,26 @@ import klab.serialization.*;
 /**
  * The SendManagement class implements the Runnable 
  * interface and represents a thread
- * responsible for sending search requests or responses.
+ * responsible for sending message requests or responses.
  */
 public class SendManagement implements Runnable{
-    Search search;
+    Message message;
     Socket socket;
     /**
      * Constructs a new SendManagement object with
-     * the specified search and flag.
+     * the specified message and flag.
      *
-     * @param search the Search object to be used
+     * @param message the message object to be used
      * @param socket   the flag indicating whether to send the management or not
      */
-    public SendManagement(Search search, Socket socket) {
-        this.search = search;
+    public SendManagement(Message message, Socket socket) {
+        this.message = message;
         this.socket = socket;
     }
     /**
      * Executes the logic of the SendManagement thread.
-     * If the flag is false, it sends out a search request
-     * by writing the search byte array to Node.socket.
+     * If the flag is false, it sends out a message request
+     * by writing the message byte array to Node.socket.
      * If the flag is true, it sends out a response by 
      * finding the file and encoding it to the output stream.
      * Any exceptions that occur during execution are logged as warnings.
@@ -52,47 +52,101 @@ public class SendManagement implements Runnable{
     @Override
     public void run() {
         Node.LOGGER.info("Send Management thread running");
-        try {
-        if (socket == null) { //SEND OUT SEARCH
-            //write search byte array to Node.socket
-            Base64.Encoder encoder = Base64.getEncoder();
-            String keyString = new String
-                    (encoder.encode(search.getID()));
+        //System.out.println(message.getClass() == Search.class);
+        if (message.getClass() == Search.class) {
+            Search search = (Search) this.message;
+            if (socket != null) { //SEND OUT RESPONSE + FLOOD
+                //write message byte array to Node.socket
+                try {
+                    Response r = findFile(search);
+                    MessageOutput out = new MessageOutput(socket.getOutputStream());
+                    r.encode(out);
+                    Node.LOGGER.log(Level.INFO, "Sent: " + r.toString() + " to " +
+                    socket.getLocalAddress() + ":" + socket.getPort());
+                } catch (Exception e) {
+                    Node.LOGGER.log(Level.WARNING,
+                    "Interrupted Due to : " + e.getMessage());
+                }
+                List<Socket> sockets;
+                synchronized (Node.connectionsList) {
+                    sockets = new ArrayList<>(Node.connectionsList);
+                }
+                for (Socket sock : sockets) {
+                    try {
+                        if (sock != socket) {
+                        MessageOutput out;
+                        out = new MessageOutput
+                        (sock.getOutputStream());
+                        search.encode(out);
+                        }
+                    } catch (IOException e) {
+                        Node.LOGGER.log(Level.WARNING,
+                        "Interrupted Due to : " + e.getMessage());
+                    }
+                    Node.LOGGER.log(Level.INFO,
+                    "Forwarded: " + search.toString() + " to " +
+                    sock.getLocalAddress() + ":" + sock.getPort());
+                    
+            }
+            }
+            else {
+                List<Socket> sockets;
+                synchronized (Node.connectionsList) {
+                    sockets = new ArrayList<>(Node.connectionsList);
+                }
+                for (Socket sock : sockets) {
+                    try {
+                        MessageOutput out;
+                        out = new MessageOutput
+                        (sock.getOutputStream());
+                        search.encode(out);
+                        Base64.Encoder encoder = Base64.getEncoder();
+                        String id = new String(encoder.encode(search.getID()));
+                        Node.addToSList(id, search.getSearchString());
+                    } catch (IOException e) {
+                        Node.LOGGER.log(Level.WARNING,
+                        "Interrupted Due to : " + e.getMessage());
+                        
+                    }
+                    Node.LOGGER.log(Level.INFO,
+                    "Sent: " + search.toString() + " to " +
+                    sock.getLocalAddress() + ":" + sock.getPort());
+                }   
+            }
+        }
+        else if (message.getClass() == Response.class) { 
+            //forward the response
+            Response r = (Response) message;
             List<Socket> sockets;
             synchronized (Node.connectionsList) {
                 sockets = new ArrayList<>(Node.connectionsList);
             }
             for (Socket sock : sockets) {
-                MessageOutput out = new MessageOutput
-                (sock.getOutputStream());
-                search.encode(out);
-                Node.addToSList(keyString, search.getSearchString());
-                Node.LOGGER.log(Level.INFO, "Sent: " + search.toString() + " to " + sock.getLocalAddress() + ":" + sock.getPort());
+                MessageOutput out;
+                try {
+                    if (sock != socket) {
+                        out = new MessageOutput
+                                (sock.getOutputStream());
+                        r.encode(out);
+                    }
+                }
+                catch (IOException e) {
+                    Node.LOGGER.log(Level.WARNING, 
+                    "Interrupted Due to : " + e.getMessage());
+                }
+                Node.LOGGER.log(Level.INFO,
+                "Forwarded: " + r.toString() + " to " +
+                sock.getLocalAddress() + ":" + sock.getPort());
             }
-        }
-        else { //SEND OUT RESPONSE
-            Response r = findFile(search, socket);
-            r.setTTL(r.getTTL()- 1);
-            if (r.getTTL() < 0) {
-                Node.LOGGER.log(Level.INFO, "TTL at 0");
-            }
-            r.encode(new MessageOutput(socket.getOutputStream()));
-            Node.LOGGER.log(Level.INFO, "Sent: " + r.toString());
-        }
-        } catch (IOException e) {
-            Node.LOGGER.log(Level.WARNING, 
-            "Interrupted Due to : " + e.getMessage());
-        } catch (BadAttributeValueException e) {
-            Node.LOGGER.log(Level.WARNING, 
-            "Interrupted Due to : " + e.getMessage());
-        } 
+
+        }    
     }
     /**
-     * Represents a response object containing search results.
-     * @return the response object containing search results
-     * @param s the search object to be used in generating the response
+     * Represents a response object containing message results.
+     * @return the response object containing message results
+     * @param s the message object to be used in generating the response
      */
-    private Response findFile(Search s, Socket sock)
+    private Response findFile(Search s)
     throws BadAttributeValueException, UnknownHostException {
         //find file in local directory
         InetSocketAddress hostaddr = new
@@ -129,15 +183,15 @@ public class SendManagement implements Runnable{
             }
         }
         Response r = new Response(s.getID(), 
-        s.getTTL(), s.getRoutingService(), hostaddr);
+     10, s.getRoutingService(), hostaddr);
         for (File f : files) {
             if (f.getName().contains(s.getSearchString())) {
                 byte[] temp = Base64.
                 getDecoder().decode(Node.dir.get(f.getName()));
                 r.addResult(new Result(temp, f.length(), f.getName()));
-                Node.LOGGER.log(Level.INFO, "Found: " + r.toString());
             }
         }
+        Node.LOGGER.log(Level.INFO, "Found: " + r.toString());
         r.setMatches(r.getResultList().size());
         return r;
     }

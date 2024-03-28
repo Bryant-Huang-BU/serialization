@@ -5,7 +5,7 @@ import java.net.Socket;
 public class UltimateManagement implements Runnable {
     private Socket socket;
     private ResponseManagement rM;
-    public UltimateNode(Socket socket) {
+    public UltimateManagement(Socket socket) {
         this.socket = socket;
         this.rM = new ResponseManagement(socket);
     }

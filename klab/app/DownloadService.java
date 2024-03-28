@@ -20,7 +20,7 @@ public class DownloadService implements Runnable{
     @Override
     public void run() {
         while (!Node.downServer.isClosed()) {
-            //System.out.println("Download");
+            Node.LOGGER.info("Download Service Running!");
             try {
                 if (Node.downServer != null) {
                     Socket socket = Node.downServer.accept();
@@ -33,7 +33,7 @@ public class DownloadService implements Runnable{
                 //System.out.println("RUN");
                 if (Node.downServer.isClosed()) {
                     Node.LOGGER.info("Download Server Socket Closed!");
-                    threadPool.close();
+                    threadPool.shutdown();
                     break;
                 }
             }

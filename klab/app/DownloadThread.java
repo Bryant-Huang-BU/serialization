@@ -1,11 +1,8 @@
 package klab.app;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.net.Inet4Address;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Base64;
@@ -16,18 +13,21 @@ import klab.serialization.BadAttributeValueException;
 
 public class DownloadThread implements Runnable {
     private Socket socket;
-    private Byte[] key;
-    
+    private byte[] fileid;
+
     public DownloadThread (Socket socket) 
     {
         try {
             this.socket = socket;
             InputStream in = socket.getInputStream();
-            //read the key
-            this.key = new Byte[4];
+            //read the fileid
+            this.fileid = new byte[4];
             for (int i = 0; i < 4; i++) {
-                key[i] = (byte) in.read();
+                fileid[i] = (byte) in.read();
             }
+            Base64.Encoder encoder = Base64.getEncoder();
+            String id = new String(encoder.encode(fileid));
+            System.out.println(id);
         }
         catch (Exception e) {
             Node.LOGGER.warning("Error in DownloadThread: " + e.getMessage());
@@ -40,12 +40,12 @@ public class DownloadThread implements Runnable {
             byte[] payload;
             Node.LOGGER.log(Level.INFO, "Downloading from: " + socket.getInetAddress().getHostAddress());
             //find the file
-            if (key == null) {
-                Node.LOGGER.log(Level.INFO, "No key found for: " + socket.getInetAddress().getHostAddress());
+            if (fileid == null) {
+                Node.LOGGER.log(Level.INFO, "No fileid found for: " + socket.getInetAddress().getHostAddress());
                 socket.close();
                 return;
             }
-            File f = findFile(key);
+            File f = findFile(fileid);
             if (f == null) {
                 throw new Exception("File not found");
             }
@@ -93,7 +93,7 @@ public class DownloadThread implements Runnable {
             }
         }
     }
-    public File findFile(Byte[] fileID) throws UnknownHostException, BadAttributeValueException {
+    public File findFile(byte[] fileID) throws UnknownHostException, BadAttributeValueException {
     //find file in local directory
         File currDir = new File(Node.searchDir);
         File[] files = currDir.listFiles();

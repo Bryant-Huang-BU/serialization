@@ -1,12 +1,20 @@
-Mar 27, 2024 6:44:34 PM klab.app.Node main
+Mar 27, 2024 8:13:24 PM klab.app.Node main
 INFO: Node connected!
-Mar 27, 2024 6:44:34 PM klab.app.acceptConnections run
+Mar 27, 2024 8:13:24 PM klab.app.acceptConnections run
 INFO: Accept Connections thread running
-Mar 27, 2024 6:44:51 PM klab.app.Node main
+Mar 27, 2024 8:13:30 PM klab.app.Node main
 INFO: Connecting to node: localhost on port: 1024
-Mar 27, 2024 6:44:51 PM klab.app.UltimateManagement run
+Mar 27, 2024 8:13:30 PM klab.app.UltimateManagement run
 INFO: Ultimate Node thread running for socket: localhost/127.0.0.1:1024
-Mar 27, 2024 6:44:51 PM klab.app.ResponseManagement run
+Mar 27, 2024 8:13:30 PM klab.app.ResponseManagement run
 INFO: Response Management thread running
-Mar 27, 2024 6:44:54 PM klab.app.SendManagement run
+Mar 27, 2024 8:13:31 PM klab.app.SendManagement run
 INFO: Send Management thread running
+Mar 27, 2024 8:13:31 PM klab.app.SendManagement run
+INFO: Sent: Search: ID=597DC6BC04D04C9403F8BD418CC765 TTL=10 Routing=DEPTHFIRST Search=a to /127.0.0.1:1024
+Mar 27, 2024 8:13:31 PM klab.app.ResponseManagement processResponse
+INFO: Received Response: Response: ID=597DC6BC04D04C9403F8BD418CC765 TTL=10 Routing=DEPTHFIRST Host=10.63.30.106:1025 [Result: FileID=C68C2AB0 FileSize=2 bytes FileName=BryantBeBryanting, Result: FileID=69A86D55 FileSize=1 bytes FileName=N.a, Result: FileID=1BF1C0BD FileSize=76 bytes FileName=oompaloompa.oompatxt]
+Mar 27, 2024 8:13:31 PM klab.app.ResponseManagement run
+INFO: Processed Response from /10.63.30.106:1025
+Mar 27, 2024 8:13:57 PM klab.app.Node main
+INFO: Downloading file: N.txt from node: 10.63.30.106 on port: 1025

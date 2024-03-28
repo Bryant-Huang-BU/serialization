@@ -8,9 +8,11 @@
 package klab.app;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.logging.Level;
 
 import klab.serialization.*;
 
@@ -23,6 +25,11 @@ import klab.serialization.*;
  * and performs the necessary actions.
  */
 public class ResponseManagement implements Runnable {
+
+    public Socket sock;
+    public ResponseManagement (Socket sock) {
+        this.sock = sock;
+    }
     /**
      * Executes the main logic of the Response Management thread.
      * This method continuously listens for incoming messages on
@@ -38,53 +45,73 @@ public class ResponseManagement implements Runnable {
         Node.LOGGER.info("Response Management thread running");
         MessageInput in = null;
         boolean flag = false;
-        while (true) {
+
+            try {
             //System.out.println("Hello?");
-            List<Socket> sockets;
-            synchronized (Node.connectionsList) {
-                sockets = new ArrayList<>(Node.connectionsList);
-            }
-                for (Socket sock : Node.getConnectionsList()) {
-                    try{
-                        in = new MessageInput(sock.getInputStream());
+                in = new MessageInput(sock.getInputStream());
+                while (!sock.isClosed()) {
                     if (in.isAvail()) {
-                            in = new MessageInput(sock.getInputStream());
-                            flag = true;
-                            Message msg = Message.decode(in); //if not either,
-                            if (msg.getClass() == Response.class) {
+                        in = new MessageInput(sock.getInputStream());
+                        flag = true;
+                        Message msg = Message.decode(in); //if not either,
+                        if (msg.getClass() == Response.class) { //IF RESPONSE
                             Response r = (Response) msg;
-                            processResponse(r);
-                            } else if (msg.getClass() == Search.class) {
-                            for (Socket socksrch : Node.getConnectionsList()) {
-                                Search s = (Search) msg;
-                                if (socksrch != null) {
-                                    Node.tS.submit(new SendManagement(
-                                            s, socksrch));
-                                    Node.LOGGER.info(
-                                "Received Search: " + s.toString());
+                            Base64.Encoder encoder = Base64.getEncoder();
+                            String id = new String(encoder.encode(r.getID()));
+                            if (Node.getSList().containsKey(id)) {
+                                processResponse(r);
+                                Node.LOGGER.log(Level.INFO, "Processed Response from " 
+                                + r.getResponseHost().getAddress() + ":" + 
+                                r.getResponseHost().getPort());
+                            } else { //forward the response
+                                /*List<Socket> socketsr;
+                                synchronized (Node.connectionsList) {
+                                    socketsr = new ArrayList<>(Node.connectionsList);
+                                }
+                                for (Socket sockr : socketsr) {*/
+                                if (sock != null) {
+                                    r.setTTL(r.getTTL() - 1);
+                                    if (r.getTTL() > 0){
+                                        Node.tS.submit(new SendManagement(
+                                                r, sock));
+                                        Node.LOGGER.info(
+                                    "Received Response: " + r.toString());
+                                    }
+                                    else {
+                                        Node.LOGGER.info("TTL EXPIRED " + r.toString());
+                                    }
                                 }
                             }
+
+                    } else if (msg.getClass() == Search.class) {
+                            Search s = (Search) msg;
+                            s.setTTL(s.getTTL() - 1);
+                            if (s.getTTL() > 0) {
+                                Node.tS.submit(new SendManagement(
+                                s, sock));
+                                Node.LOGGER.info(
+                                        "Received Search: " + s.toString());
+                            } else {
+                                Node.LOGGER.info(
+                                        "TTL EXPIRED " + s.toString());
                             }
-                            
+                            }
+                        }
+                        else {
+                            flag = false;
+                        }
                     }
-                    else {
-                        flag = false;
-                    }
-            } catch (Exception e) {
-                    if (sock.isClosed()) {
-                        Node.LOGGER.info("Socket Closed!");
-                        Node.removeConnection(sock);
-                        continue;
-                    } else {
-                        if (flag) {
-                            Node.LOGGER.warning(
-                        "Response Management thread interrupted "
-                            + e.getMessage());
-                        break;
+        } catch (Exception e) {
+                if (sock.isClosed()) {
+                    Node.LOGGER.info("Socket Closed!");
+                    Node.removeConnection(sock);
+                } else {
+                    if (flag) {
+                        Node.LOGGER.warning(
+                    "Response Management thread interrupted "
+                        + e.getMessage());
                     }
                 }
-            }
-        }
     }
 }
     /**

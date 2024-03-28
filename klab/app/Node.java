@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.*;
@@ -45,13 +46,17 @@ public class Node {
     public static ServerSocket downServer;
     public static List<Socket> connectionsList = new ArrayList();
     public static int downloadPort;
+    public static Object myAddr;
+    public static ExecutorService eS = Executors.newCachedThreadPool();
+    public static ExecutorService downloadClients = Executors.newCachedThreadPool();
+
     int connectCount = 0;
     static {
         FileHandler f;
         ConsoleHandler c; 
         try {
             f = new FileHandler(
-     System.getProperty("user.dir") + "\\node.log");
+     System.getProperty("user.dir") + "\\serialization\\klab\\app\\node.log");
             c = new ConsoleHandler();
             f.setFormatter(new SimpleFormatter());
             LOGGER.setLevel(Level.ALL);
@@ -103,22 +108,22 @@ public class Node {
         }
         if (args[0] == null) {
             Node.LOGGER.log(Level.SEVERE, "Invalid local Node port");
-            System.out.println("");
+            //System.out.println("");
             return;
         }
         if (Integer.parseInt(args[0]) < 0 || Integer.parseInt(args[0]) > 65535) {
             LOGGER.log(Level.SEVERE, "Invalid local port");
-            System.out.println("Invalid Local Port");
+            //System.out.println("Invalid Local Port");
             return;
         }
         if (args[2] == null) {
             Node.LOGGER.log(Level.SEVERE, "Invalid Download port");
-            System.out.println("Invalid Download Port");
+            //System.out.println("Invalid Download Port");
             return;
         }
         if (Integer.parseInt(args[2]) < 0 || Integer.parseInt(args[2]) > 65535) {
             LOGGER.log(Level.SEVERE, "Invalid local port");
-            System.out.println("Invalid Local Port");
+            //System.out.println("Invalid Local Port");
             return;
         }
         Node.LOGGER.info("Node connected!");
@@ -128,9 +133,6 @@ public class Node {
         //Node.socket = new Socket("localhost", Integer.parseInt(args[0]));
         Node.serverSocket = new ServerSocket(Integer.parseInt(args[0]));
         Node.downloadPort= Integer.parseInt(args[2]);
-
-        Thread tR = new Thread(new ResponseManagement());
-        tR.start();
         Thread tD = new Thread(new DownloadService());
         tD.start();
         Thread tC = new Thread(new acceptConnections());
@@ -166,8 +168,12 @@ public class Node {
                         else {
                             Node.LOGGER.info("Connecting to node: " + command[1] +
                                     " on port: " + command[2]);
-                            Node.addConnection(new Socket
-                            (command[1], Integer.parseInt(command[2])));
+                            if 
+                            (Node.addConnection(new Socket
+                            (command[1], Integer.parseInt(command[2]))) == null) {
+                                Node.LOGGER.log(Level.WARNING,
+                                "Connection already exists");
+                            }
                             System.out.print("> ");
                         }
                     }
@@ -188,26 +194,13 @@ public class Node {
                             Node.LOGGER.info("Downloading file: " + command[4] +
                             " from node: " + command[1] + " on port: " + command[2]);
                             //send download request
-                            downSocket = new Socket(command[1],  Integer.parseInt(command[2]));
-                            ByteArrayInputStream in = new ByteArrayInputStream(command[3].getBytes());
-                            //block until download complete
-                            OutputStream out = new FileOutputStream(command[4]);
-                            byte[] buffer = new byte[1024];
-                            int bytesRead;
-                            int counter = 0;
-                            while ((bytesRead = in.read(buffer)) != -1) {
-                                out.write(buffer, 0, bytesRead);
-                                if (counter == 6 && new 
-                                String(buffer, 0, bytesRead).equals("ERROR ")) {
-                                    System.out.println("File not found");
-                                    break;
-                                }
-                                counter++;
-                            }
-                            out.close();
-                            in.close();
-                            downSocket.close();
-                            Node.LOGGER.info("Downloaded file: " + command[4]);
+                            //string to byte
+                            byte[] id = new byte[4];
+                            //send download request
+                            Thread DownloadSender = new Thread(new DownloadSender(command[1], 
+                            Integer.parseInt(command[2]), id,  command[4]));
+                            Node.downloadClients.submit(DownloadSender);
+                            //Node.LOGGER.info("Downloaded file: " + command[4]);
                             System.out.print("> ");
                         }
                     }
@@ -227,7 +220,6 @@ public class Node {
             } catch (IOException e) {
                 Node.LOGGER.log(Level.WARNING,  
                 "Unable to communicate: "+  e.getMessage());
-                break;
             } catch (BadAttributeValueException e) {
                 Node.LOGGER.log(Level.WARNING,
                 "Invalid Message: "
@@ -242,10 +234,11 @@ public class Node {
             + e.getMessage());
         }
         //System.out.println(Node.downServer.isClosed());
-        tR.interrupt();
+        downloadClients.shutdown();
         tS.shutdown();
         tD.interrupt();
         tC.interrupt();
+        eS.shutdown();
         sc.close();
         return;
     }
@@ -330,23 +323,30 @@ public class Node {
         }
     }
 
-    public static synchronized void addConnection(Socket s) {
-        try {
-            if (!connectionsList.contains(s)) {
-                connectionsList.add(s);
-            }
-            else {
-                throw new IOException();
-            }
+    public static synchronized Socket addConnection(Socket s) {
+        List<Socket> sockets;
+        synchronized (Node.connectionsList) {
+            sockets = new ArrayList<>(Node.connectionsList);
         }
-        catch (IOException e) {
-            Node.LOGGER.log(Level.WARNING, "Socket aleady Connected!");
-        }
+            for (Socket socket : sockets) {
+                if (socket.getRemoteSocketAddress().equals(s.getRemoteSocketAddress()) &&
+                        socket.getPort() == s.getPort()) {
+                    return null;
+                }
+            }
+            connectionsList.add(s);
+            Node.eSsubmit(s);
+            return s;
     }
-
     public static synchronized void removeConnection(Socket socket) {
         if (connectionsList.contains(socket)) {
             connectionsList.remove(socket);
         }
     }
+
+    public static synchronized void eSsubmit(Socket s) {
+        eS.submit(new UltimateManagement(s));
+    }
+
+
 }
