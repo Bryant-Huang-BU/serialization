@@ -78,14 +78,15 @@ public class SendManagement implements Runnable{
                         out = new MessageOutput
                         (sock.getOutputStream());
                         search.encode(out);
+                        Node.LOGGER.log(Level.INFO,
+                    "Forwarded: " + search.toString() + " to " +
+                        sock.getLocalAddress() + ":" + sock.getPort());
                         }
                     } catch (IOException e) {
                         Node.LOGGER.log(Level.WARNING,
                         "Interrupted Due to : " + e.getMessage());
                     }
-                    Node.LOGGER.log(Level.INFO,
-                    "Forwarded: " + search.toString() + " to " +
-                    sock.getLocalAddress() + ":" + sock.getPort());
+
                     
             }
             }

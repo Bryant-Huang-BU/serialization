@@ -16,7 +16,7 @@ public class acceptConnections implements Runnable{
                     throw new IOException("Error adding connection to list");
                 }
                 else {
-                    Node.addConnection(sock);
+                    //Node.addConnection(sock);
                     Node.LOGGER.info("Connection accepted");
                 }
             } catch (Exception e) {

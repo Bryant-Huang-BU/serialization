@@ -8,6 +8,7 @@
 package klab.app;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -18,12 +19,12 @@ import java.util.logging.*;
 import klab.serialization.*;
 /*
  * Implement a node that makes a tcp connection to another Node
- * until termination and completely ascynchronously, prints 
+ * until termination and completely ascynchronously, prints
  * responses to console and response to searches from other Node
  * Repeatedly until the user types "exit" at the command prompt
  * Prompts for search string/exit
  * Send the search to the Neighbor Node
- * 
+ *
  */
 public class Node {
     static InetSocketAddress address;
@@ -32,7 +33,7 @@ public class Node {
     //public static Socket socket;
     public static Socket downSocket = new Socket();
     public static final Logger LOGGER = Logger.getLogger("node.log");
-    public static final ExecutorService tS = 
+    public static final ExecutorService tS =
     Executors.newSingleThreadExecutor();
     public static String searchDir = "";
     //ExecutorService threadPool = Executors.newFixedThreadPool(4);
@@ -44,16 +45,16 @@ public class Node {
     public static int downloadPort;
     public static Object myAddr;
     public static ExecutorService eS = Executors.newCachedThreadPool();
-    public static ExecutorService downloadClients = 
+    public static ExecutorService downloadClients =
     Executors.newCachedThreadPool();
 
-    int connectCount = 0;
     static {
         FileHandler f;
-        ConsoleHandler c; 
+        ConsoleHandler c;
         try {
             f = new FileHandler(
-     System.getProperty("user.dir") + "\\serialization\\klab\\app\\node.log");
+            System.getProperty("user.dir") +
+            "\\node.log");
             c = new ConsoleHandler();
             f.setFormatter(new SimpleFormatter());
             LOGGER.setLevel(Level.ALL);
@@ -65,25 +66,24 @@ public class Node {
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "File LOGGER not working:"
             , e.getMessage());
-        }   
+        }
     }
     /**
      * The main method is the entry point of the program.
      * It takes command line arguments and initializes a Node object.
-     * It then prompts the user for input and sends search requests 
+     * It then prompts the user for input and sends search requests
      * to other nodes.
      * The program can be terminated by entering "exit".
      *
-     * @param args The command line arguments: <Search Directory> 
+     * @param args The command line arguments: <Search Directory>
      * <Neighbor Node> <Neighbor Port>
      * @throws IOException                If an I/O error occurs.
-     * @throws BadAttributeValueException If the attribute value is invalid.
      */
-    public static void main(String[] args) 
-    throws IOException, BadAttributeValueException {
+    public static void main(String[] args)
+    throws IOException {
         if (args.length != 3) {
             System.out.println(
-            "Illegal Arguments! " + 
+            "Illegal Arguments! " +
             "Parameter(s): <local Node port" +
             " <local document directory> " +
             "<local download port>");
@@ -95,20 +95,44 @@ public class Node {
             return;
         }
         Node.searchDir = args[1];
-        File dir = new File(searchDir);
-        if (!dir.exists()) {
-            Node.LOGGER.log(Level.SEVERE, 
+        File currDir = new File(Node.searchDir);
+        if (!currDir.exists()) {
+            Node.LOGGER.log(Level.SEVERE,
             "Search directory does not exist");
             System.out.println(
             "Search directory does not exist");
             return;
         }
+        //map out the directory
+        File[] files = currDir.listFiles();
+        byte[] idbyte = new byte[4];
+        Base64.Encoder encoder = Base64.getEncoder();
+        String ida = new String(encoder.encode(idbyte));
+        Random rand = new Random();
+        for (int i = 0; i < 4; i++) {
+            idbyte[i] = (byte) rand.nextInt(255);
+        }
+        for (File f : files) {
+            if (!Node.dir.containsKey(f.getName())) {
+                while (Node.dir.containsValue(ida)) {
+                    for (int i = 0; i < 4; i++) {
+                        idbyte[i] = (byte) rand.nextInt(255);
+                        ida = new String(encoder.encode(idbyte));
+                    }
+                }
+                Node.dir.put(f.getName(), ida);
+            }
+        }
+        /*for (String key : Node.dir.keySet()) {
+            System.out.println(key + " " + Node.dir.get(key));
+        }*/
         if (args[0] == null) {
             Node.LOGGER.log(Level.SEVERE, "Invalid local Node port");
             //System.out.println("");
             return;
         }
-        if (Integer.parseInt(args[0]) < 0 || Integer.parseInt(args[0]) > 65535) {
+        if (Integer.parseInt(args[0]) < 0 || 
+        Integer.parseInt(args[0]) > 65535) {
             LOGGER.log(Level.SEVERE, "Invalid local port");
             //System.out.println("Invalid Local Port");
             return;
@@ -118,7 +142,8 @@ public class Node {
             //System.out.println("Invalid Download Port");
             return;
         }
-        if (Integer.parseInt(args[2]) < 0 || Integer.parseInt(args[2]) > 65535) {
+        if (Integer.parseInt(args[2]) < 0 ||
+        Integer.parseInt(args[2]) > 65535) {
             LOGGER.log(Level.SEVERE, "Invalid local port");
             //System.out.println("Invalid Local Port");
             return;
@@ -141,32 +166,35 @@ public class Node {
             try {
                 if (sc.hasNextLine()) {
                     input = sc.nextLine();
-                    String[] command = input.split(" ");                    
+                    String[] command = input.split(" ");
                     if (command[0].equals("exit")) {
-                        //stop the thread;
-                        //sc.close();
-                        //System.out.println("hello");
                         break;
                     }
                     //connect
                     else if (command[0].equals("connect")) {
+                        //System.out.println(command.length != 3);
                         if (command.length != 3) {
-                            System.out.println("Bad connect command: "
-                            + "Expect connect <node id> <node port>");
-                            Node.LOGGER.info("Bad connect command: "+
+                            Node.LOGGER.warning("Bad connect command: "+
                             "Expect connect <node id> <node port>");
                             System.out.print("> ");
-                            continue;
                         }
                         else if (Integer.parseInt(command[2]) < 0
                         || Integer.parseInt(command[2]) > 65535) {
-                            Node.LOGGER.info
+                            Node.LOGGER.warning
                             ("Bad connect command: invalid port");
+                        }
+                        //cannot connect to self ip
+                        else if (((InetAddress.getLocalHost().getHostAddress()
+                        == command[1]) || command[1].contains("localhost")) && Integer.parseInt
+                        (command[2]) == Integer.parseInt(args[0])) {
+                            Node.LOGGER.warning("Cannot connect to self");
+                            System.out.print("> ");
+
                         }
                         else {
                             Node.LOGGER.info("Connecting to node: " + command[1] +
                                     " on port: " + command[2]);
-                            if 
+                            if
                             (Node.addConnection(new Socket
                             (command[1], Integer.parseInt(command[2]))) == null) {
                                 Node.LOGGER.log(Level.WARNING,
@@ -178,34 +206,49 @@ public class Node {
                     //download command
                     else if (command[0].equals("download")) {
                         if (command.length != 5) {
-                            System.out.println(
-                            "Bad download command: Expect download <download"+
-                            " node> <download port> <file ID> <file name>");
-                            Node.LOGGER.info
-                            ("Bad download command: Expect download"
+                            Node.LOGGER.log
+                            (Level.WARNING, "Bad download command:" +
+                            " Expect download"
                             + " <download node>"+
                             " <download port> <file ID> <file name>");
                             System.out.print("> ");
-                            continue;
-                        }
+                                                    }
                         else {
-                            Node.LOGGER.info("Downloading file: " + command[4] +
-                            " from node: " + command[1] + " on port: " + command[2]);
+                            Node.LOGGER.info(
+                        "Downloading file: " + command[4] +
+                            " from node: " + command[1] +
+                            " on port: " + command[2]);
                             //send download request
                             //string to byte
-                            byte[] id = new byte[4];
                             //send download request
-                            Thread DownloadSender = new Thread(new DownloadSender(command[1], 
-                            Integer.parseInt(command[2]), id,  command[4]));
-                            Node.downloadClients.submit(DownloadSender);
-                            //Node.LOGGER.info("Downloaded file: " + command[4]);
+                            //parse the string to byte
+                            // string looks like this EAB7B88D
+                            int len = command[3].length();
+                            byte[] id = new byte[len / 2];
+                            for (int i = 0; i < len; i += 2) {
+                                id[i / 2] = (byte)
+                                 ((Character.digit
+                                 (command[3].charAt(i), 16) << 4)
+                                + Character.digit(command[3].
+                                charAt(i+1), 16));
+                            }
+                            Socket s = new Socket (command[1],
+                            Integer.parseInt(command[2]));
+                            if (!s.isClosed()) {
+                            Thread dSt = new Thread(
+                                new DownloadSender(s, id,  command[4]));
+                                Node.downloadClients.submit(dSt);
+                            }
+                            else {
+                                Node.LOGGER.warning("Socket Connection failed");
+                            }
                             System.out.print("> ");
                         }
                     }
                     //search
                     else {
                         byte[] id = new byte[15];
-                        Random rand = new Random();
+                        rand = new Random();
                         for (int i = 0; i < 15; i++) {
                             id[i] = (byte) rand.nextInt(255);
                         }

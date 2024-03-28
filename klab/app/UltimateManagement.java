@@ -9,6 +9,7 @@
 package klab.app;
 
 import java.net.Socket;
+import java.util.logging.Level;
 
 /**
  * The UltimateManagement class represents a thread
@@ -37,9 +38,10 @@ public class UltimateManagement implements Runnable {
      */
     @Override
     public void run() {
-        Node.LOGGER.info("Ultimate Node thread running for socket: " 
-        + socket.getInetAddress() + ":" + socket.getPort());
         try {
+            String ip = socket.getRemoteSocketAddress().toString();
+            Node.LOGGER.info("Ultimate Node thread running for socket: "
+            + ip);
             Thread rMT = new Thread(rM);
             rMT.start();
         } catch (Exception e) {

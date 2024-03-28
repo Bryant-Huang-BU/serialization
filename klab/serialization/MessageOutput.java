@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.Object;
+import java.nio.charset.StandardCharsets;
 /**
  * The MessageOutput class represents an object 
  * that writes messages to an output stream.
@@ -76,7 +77,7 @@ public class MessageOutput extends Object{
      */
     public void writeStringWithSize(String searchString) throws IOException {
         try {
-            byte[] bytes = searchString.getBytes();
+            byte[] bytes = searchString.getBytes(StandardCharsets.US_ASCII);
             out.write(bytes);
         } catch (IOException e) {
             throw new IOException("Bad Write Function");
