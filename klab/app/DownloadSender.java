@@ -54,7 +54,7 @@ public class DownloadSender implements Runnable {
     }
 
     @Override
-    public void run() {
+    public void run() { //USE TRANSFER TO SEND FILE
         try {
             // Send the file name to the server
             output.write(fileid);
