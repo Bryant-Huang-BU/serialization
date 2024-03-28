@@ -6,11 +6,10 @@
  *
  ************************************************/
 package klab.app;
-
+import java.io.IOException;
 import java.net.Socket;
 import java.util.*;
 import java.util.logging.Level;
-
 import klab.serialization.*;
 
 /**
@@ -42,75 +41,90 @@ public class ResponseManagement implements Runnable {
         Node.LOGGER.info("Response Management thread running");
         MessageInput in = null;
         boolean flag = false;
-
-            try {
-            //System.out.println("Hello?");
+        try {
+            while (!sock.isClosed()) {
                 in = new MessageInput(sock.getInputStream());
-                while (!sock.isClosed()) {
-                    if (in.isAvail()) {
-                        in = new MessageInput(sock.getInputStream());
-                        flag = true;
-                        Message msg = Message.decode(in); //if not either,
-                        if (msg.getClass() == Response.class) { //IF RESPONSE
-                            Response r = (Response) msg;
-                            Base64.Encoder encoder = Base64.getEncoder();
-                            String id = new String(encoder.encode(r.getID()));
-                            if (Node.getSList().containsKey(id)) {
-                                processResponse(r);
-                                Node.LOGGER.log(Level.INFO, "Processed Response from " 
-                                + r.getResponseHost().getAddress() + ":" + 
-                                r.getResponseHost().getPort());
-                            } else { //forward the response
-                                /*List<Socket> socketsr;
-                                synchronized (Node.connectionsList) {
-                                    socketsr = new ArrayList<>(Node.connectionsList);
-                                }
-                                for (Socket sockr : socketsr) {*/
-                                if (sock != null) {
-                                    r.setTTL(r.getTTL() - 1);
-                                    if (r.getTTL() > 0){
-                                        Node.tS.submit(new SendManagement(
-                                                r, sock));
-                                        Node.LOGGER.info(
-                                    "Received Response: " + r.toString());
-                                    }
-                                    else {
-                                        Node.LOGGER.info("TTL EXPIRED " + r.toString());
-                                    }
-                                }
-                            }
-
-                    } else if (msg.getClass() == Search.class) {
-                            Search s = (Search) msg;
-                            s.setTTL(s.getTTL() - 1);
-                            if (s.getTTL() > 0) {
-                                Node.tS.submit(new SendManagement(
-                                s, sock));
-                                Node.LOGGER.info(
-                                        "Received Search: " + s.toString());
-                            } else {
-                                Node.LOGGER.info(
-                                        "TTL EXPIRED " + s.toString());
-                            }
-                            }
+                if (in.isAvail()) {
+                    in = new MessageInput(sock.getInputStream());
+                    flag = true;
+                    Message msg = Message.decode(in); //if not either,
+                if (msg.getClass() == Response.class) { //IF RESPONSE
+                    Response r = (Response) msg;
+                    Base64.Encoder encoder = Base64.getEncoder();
+                    String id = new String(encoder.encode(r.getID()));
+                    if (Node.getSList().containsKey(id)) {
+                        processResponse(r);
+                        Node.LOGGER.log(
+                        Level.INFO, "Processed Response from "
+                        + r.getResponseHost().getAddress() + ":" +
+                        r.getResponseHost().getPort());
+                    } else { //forward the response
+                        /*List<Socket> socketsr;
+                        synchronized (Node.connectionsList) {
+                            socketsr =
+                            new ArrayList<>(Node.connectionsList);
                         }
-                        else {
-                            flag = false;
+                        for (Socket sockr : socketsr) {*/
+                        if (sock != null) {
+                            r.setTTL(r.getTTL() - 1);
+                            if (r.getTTL() > 0){
+                                Node.tS.submit(new SendManagement(
+                                        r, sock));
+                                Node.LOGGER.info(
+                            "Received Response: " + r.toString());
+                            }
+                            else {
+                                Node.LOGGER.info
+                                ("TTL EXPIRED " + r.toString());
+                            }
                         }
                     }
-        } catch (Exception e) {
-                if (sock.isClosed()) {
-                    Node.LOGGER.info("Socket Closed!");
-                    Node.removeConnection(sock);
-                } else {
-                    if (flag) {
-                        Node.LOGGER.warning(
-                    "Response Management thread interrupted "
-                        + e.getMessage());
+
+                } else if (msg.getClass() == Search.class) {
+                        Search s = (Search) msg;
+                        s.setTTL(s.getTTL() - 1);
+                        if (s.getTTL() > 0) {
+                            Node.tS.submit(new SendManagement(
+                            s, sock));
+                            Node.LOGGER.info(
+                                    "Received Search: " + s.toString());
+                        } else {
+                            Node.LOGGER.info(
+                                    "TTL EXPIRED " + s.toString());
+                        }
+                        }
+                    }
+                    else {
+                        flag = false;
                     }
                 }
+        } catch (Exception e) {
+            if (sock.isClosed()) {
+                //System.out.println("OH NO");
+                Node.LOGGER.info("Socket Closed!");
+                Node.removeConnection(sock);
+                shutdown();
+            } else {
+                if (flag) {
+                    Node.LOGGER.warning(
+                "Response Management thread interrupted "
+                    + e.getMessage());
+                }
+        }
     }
 }
+/**
+     * Kills the thread.
+     */
+    public void shutdown() {
+        try {
+            sock.close();
+        } catch (IOException e) {
+            Node.LOGGER.log(Level.WARNING,
+            "Couldn't close socket");
+        }
+        Thread.currentThread().interrupt();
+    }
     /**
      * Processes the given response.
      * 
@@ -141,6 +155,4 @@ public class ResponseManagement implements Runnable {
             }
         }
     }
-
-
 }

@@ -393,8 +393,12 @@ public class Node {
      * @param socket the socket to be removed
      */
     public static synchronized void removeConnection(Socket socket) {
-        if (connectionsList.contains(socket)) {
-            connectionsList.remove(socket);
+        connectionsList.remove(socket);
+        try {
+            socket.close();
+        } catch (IOException e) {
+            Node.LOGGER.log(Level.WARNING, "Unable to close socket: "
+            + e.getMessage());
         }
     }
 

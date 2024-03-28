@@ -113,7 +113,7 @@ public class DownloadThread implements Runnable {
             InputStream in = new FileInputStream(f);
             byte[] buffer = new byte[1024];
             int bytesRead;
-            payload = new byte[] { "O".getBytes(StandardCharsets.US_ASCII)[0], 
+            payload = new byte[] { "O".getBytes(StandardCharsets.US_ASCII)[0],
             "K".getBytes(StandardCharsets.US_ASCII)[0], 
             "\n".getBytes(StandardCharsets.US_ASCII)[0], 
             "\n".getBytes(StandardCharsets.US_ASCII)[0] };

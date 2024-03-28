@@ -40,6 +40,14 @@ public class SendManagement implements Runnable{
     public SendManagement(Message message, Socket socket) {
         this.message = message;
         this.socket = socket;
+        if (socket != null) {
+            Node.LOGGER.log(Level.INFO, "Send Management thread created for " +
+            socket.getLocalAddress() + ":" + socket.getPort());
+        }
+        else {
+            Node.LOGGER.log(Level.INFO, "Send Management thread created for " +
+            "all connections");
+        }
     }
     /**
      * Executes the logic of the SendManagement thread.
@@ -56,6 +64,10 @@ public class SendManagement implements Runnable{
         if (message.getClass() == Search.class) {
             Search search = (Search) this.message;
             if (socket != null) { //SEND OUT RESPONSE + FLOOD
+                if (socket.isClosed()) {
+                    Node.LOGGER.log(Level.INFO, "Closed socket");
+                    return;
+                }
                 //write message byte array to Node.socket
                 try {
                     Response r = findFile(search);
@@ -64,12 +76,19 @@ public class SendManagement implements Runnable{
                     Node.LOGGER.log(Level.INFO, "Sent: " + r.toString() + " to " +
                     socket.getLocalAddress() + ":" + socket.getPort());
                 } catch (Exception e) {
-                    Node.LOGGER.log(Level.WARNING,
-                    "Interrupted Due to : " + e.getMessage());
+                    if (!socket.isClosed()) {
+                        Node.LOGGER.log(Level.WARNING,
+                    "Interrupted Due to: " + e.getMessage());
+                    }
+                    return;
                 }
                 List<Socket> sockets;
                 synchronized (Node.connectionsList) {
                     sockets = new ArrayList<>(Node.connectionsList);
+                }
+                if (sockets.isEmpty()) {
+                    Node.LOGGER.log(Level.INFO, "No connections to send to");
+                    return;
                 }
                 for (Socket sock : sockets) {
                     try {
@@ -84,16 +103,18 @@ public class SendManagement implements Runnable{
                         }
                     } catch (IOException e) {
                         Node.LOGGER.log(Level.WARNING,
-                        "Interrupted Due to : " + e.getMessage());
+                        "Interrupted Due to: " + e.getMessage());
                     }
-
-                    
-            }
+                }
             }
             else {
                 List<Socket> sockets;
                 synchronized (Node.connectionsList) {
                     sockets = new ArrayList<>(Node.connectionsList);
+                }
+                if (sockets.isEmpty()) {
+                    Node.LOGGER.log(Level.INFO, "No connections to send to");
+                    return;
                 }
                 for (Socket sock : sockets) {
                     try {
@@ -105,8 +126,10 @@ public class SendManagement implements Runnable{
                         String id = new String(encoder.encode(search.getID()));
                         Node.addToSList(id, search.getSearchString());
                     } catch (IOException e) {
-                        Node.LOGGER.log(Level.WARNING,
-                        "Interrupted Due to : " + e.getMessage());
+                        if (!socket.isClosed()) {
+                            Node.LOGGER.log(Level.WARNING,
+                        "Interrupted Due to: " + e.getMessage());
+                        }
                         
                     }
                     Node.LOGGER.log(Level.INFO,
@@ -122,6 +145,10 @@ public class SendManagement implements Runnable{
             synchronized (Node.connectionsList) {
                 sockets = new ArrayList<>(Node.connectionsList);
             }
+            if (sockets.isEmpty()) {
+                Node.LOGGER.log(Level.INFO, "No connections to send to");
+                return;
+            }
             for (Socket sock : sockets) {
                 MessageOutput out;
                 try {
@@ -133,7 +160,7 @@ public class SendManagement implements Runnable{
                 }
                 catch (IOException e) {
                     Node.LOGGER.log(Level.WARNING, 
-                    "Interrupted Due to : " + e.getMessage());
+                    "Interrupted Due to: " + e.getMessage());
                 }
                 Node.LOGGER.log(Level.INFO,
                 "Forwarded: " + r.toString() + " to " +

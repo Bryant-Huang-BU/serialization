@@ -130,7 +130,8 @@ public class DownloadSender implements Runnable {
                         }
                     }
                     }
-                    Node.LOGGER.log(Level.INFO, "File downloaded successfully.");
+                    Node.LOGGER.log(Level.INFO, 
+                    "File downloaded successfully.");
                     disconnect();
                 } else if (buffer[0] == 'E' && buffer[1] == 'R'
                         && buffer[2] == 'R' && buffer[3] == 'O') {
