@@ -73,11 +73,7 @@ public class DownloadSender implements Runnable {
                  && buffer[2] == '\n' && buffer[3] == '\n') {
                     
                     byte[] buffer2 = new byte[1024];
-                    while ((bytesRead = 
-                    input.read(buffer2)) != -1) {
-                        output.write(buffer2, 0, bytesRead);
-                         bytesTransferred = bytesRead;
-                    }
+
                     output.close();
                 } else {
                     disconnect();
