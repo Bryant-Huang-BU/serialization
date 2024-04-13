@@ -261,6 +261,7 @@ public class Node {
             } catch (IOException e) {
                 Node.LOGGER.log(Level.WARNING,  
                 "Unable to communicate: "+  e.getMessage());
+                System.out.print("> ");
             } catch (BadAttributeValueException e) {
                 Node.LOGGER.log(Level.WARNING,
                 "Invalid Message: "

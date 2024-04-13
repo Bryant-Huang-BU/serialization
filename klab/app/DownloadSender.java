@@ -142,8 +142,8 @@ public class DownloadSender implements Runnable {
                         //read the error message
                         byte[] buf = new byte[1024];
                         while ((bytesRead = input.read(buffer)) != -1) {
-                            System.out.println(new String
-                            (buf, 0, bytesRead));
+                            //System.out.println(new String
+                            //(buf, 0, bytesRead));
                             // Clear the buffer
                             for (int i = 0; i < buf.length; i++) {
                                 buf[i] = 0;

@@ -63,6 +63,8 @@ public class MessageOutput {
                 msgID = newMsgID;
             }
             out.write(msgID, 0, len);
+            //System.out.println("Wrote bytes: " + msgID);
+            out.flush();
         } catch (IOException e) {
             throw new IOException("Bad Write Function");
         }
@@ -81,6 +83,14 @@ public class MessageOutput {
         } catch (IOException e) {
             throw new IOException("Bad Write Function");
         }
+    }
+    /**
+     * flushes the output stream
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    public void flush() throws IOException{
+        out.flush();
     }
 
     

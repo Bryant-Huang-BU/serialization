@@ -12,13 +12,12 @@ import java.net.Socket;
 
 /**
  * The acceptConnections class implements the 
- * Runnable interface and represents a thread
+ * Runnable interface and represents a threaddd
  * responsible for accepting incoming connections to the server.
  */
 public class acceptConnections implements Runnable{
     /**
-     * The run method is the entry point for the thread. 
-     * It continuously accepts incoming
+=     * It continuously accepts incoming
      * connections until the server socket is closed.
      */
     @Override

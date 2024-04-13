@@ -80,9 +80,9 @@ public class DownloadThread implements Runnable {
             + Character.digit(s.charAt(i+1), 16));
             }
             this.fileid = data;
-            for (byte b : fileid) {
+            /*for (byte b : fileid) {
                 System.out.print(String.format("%02X ", b));
-            }
+            }*/
             
             //System.out.println(id);
         } catch (Exception e) {

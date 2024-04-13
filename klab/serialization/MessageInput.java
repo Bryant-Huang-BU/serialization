@@ -77,6 +77,7 @@ public class MessageInput extends Object {
             if (remainingBytes != 0) {
                 throw new IOException("Invalid Bytes");
             }
+            //in.flush();
             return bytes;
         }
             //input sanitization
@@ -152,5 +153,4 @@ public class MessageInput extends Object {
             throw new IOException(e.getMessage());
         }
      }
-
 }

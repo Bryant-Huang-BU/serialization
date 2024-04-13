@@ -1,4 +1,4 @@
-package klab.app.donatest;
+package klab.app;
 
 import static klab.serialization.Message.decode;
 import static klab.serialization.RoutingService.BREADTHFIRST;
@@ -45,11 +45,14 @@ public class NodeOrderNonMatch {
       badID[14] = 124;
       new Response(badID, 4, BREADTHFIRST, new InetSocketAddress("2.2.2.2", 222))
           .addResult(new Result(new byte[] { 4, 4, 4, 4 }, 50, "bad")).encode(out);
+      System.out.println("BADID SENT");
       new Response(s2.getID(), 4, BREADTHFIRST, new InetSocketAddress("2.2.2.2", 222))
           .addResult(new Result(new byte[] { 4, 4, 4, 4 }, 50, "aaa")).encode(out);
+      System.out.println("GOODIDB SENT");
       new Response(s1.getID(), 40, BREADTHFIRST, new InetSocketAddress("1.1.1.1", 111))
           .addResult(new Result(new byte[] { 5, 5, 5, 5 }, 500, "bbbb"))
           .addResult(new Result(new byte[] { 6, 6, 6, 6 }, 5000, "bbbb7")).encode(out);
+      System.out.println("GOODIDA SENT");
 
       /*
        * Test send search; expect Download response

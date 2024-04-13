@@ -11,7 +11,8 @@ import java.net.Socket;
 import java.util.*;
 import java.util.logging.Level;
 import klab.serialization.*;
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 /**
  * The ResponseManagement class implements the Runnable interface 
  * and is responsible for managing responses received by the Node.
@@ -23,6 +24,7 @@ import klab.serialization.*;
 public class ResponseManagement implements Runnable {
 
     public Socket sock;
+    ExecutorService executor = Executors.newSingleThreadExecutor();
     public ResponseManagement (Socket sock) {
         this.sock = sock;
     }
@@ -39,9 +41,30 @@ public class ResponseManagement implements Runnable {
     @Override
     public void run() {
         Node.LOGGER.info("Response Management thread running");
-        MessageInput in = null;
-        boolean flag = false;
+        MessageInput in;
+        //boolean flag = false;
         try {
+            in = new MessageInput(sock.getInputStream());
+            while (!sock.isClosed()) {
+                if (in.isAvail()) {
+                    Message msg = Message.decode(in);
+                    executor.submit(new ResponseThread(msg, sock));
+                }
+            }
+        } catch (Exception e) {
+            if (sock.isClosed()) {
+                //System.out.println("OH NO");
+                Node.LOGGER.info("Socket Closed!");
+                Node.removeConnection(sock);
+                shutdown();
+                //executor.shutdown();
+            } else {
+                Node.LOGGER.warning(
+            "Response Management thread interrupted "
+                + e.getMessage());
+            }
+
+        /*try {
             while (!sock.isClosed()) {
                 in = new MessageInput(sock.getInputStream());
                 if (in.isAvail()) {
@@ -59,12 +82,6 @@ public class ResponseManagement implements Runnable {
                         + r.getResponseHost().getAddress() + ":" +
                         r.getResponseHost().getPort());
                     } else { //forward the response
-                        /*List<Socket> socketsr;
-                        synchronized (Node.connectionsList) {
-                            socketsr =
-                            new ArrayList<>(Node.connectionsList);
-                        }
-                        for (Socket sockr : socketsr) {*/
                         if (sock != null) {
                             r.setTTL(r.getTTL() - 1);
                             if (r.getTTL() > 0){
@@ -87,10 +104,10 @@ public class ResponseManagement implements Runnable {
                             Node.tS.submit(new SendManagement(
                             s, sock));
                             Node.LOGGER.info(
-                                    "Received Search: " + s.toString());
+                        "Received Search: " + s .toString());
                         } else {
                             Node.LOGGER.info(
-                                    "TTL EXPIRED " + s.toString());
+                        "TTL EXPIRED " + s.toString());
                         }
                         }
                     }
@@ -111,8 +128,9 @@ public class ResponseManagement implements Runnable {
                     + e.getMessage());
                 }
         }
+    }*/
+        }
     }
-}
 /**
      * Kills the thread.
      */
@@ -129,7 +147,7 @@ public class ResponseManagement implements Runnable {
      * Processes the given response.
      * 
      * @param r the response to be processed
-     */
+
     private void processResponse(Response r) {
         //process response
         byte[] id = r.getID();
@@ -154,5 +172,5 @@ public class ResponseManagement implements Runnable {
                 + " bytes)\n");
             }
         }
-    }
+    }*/
 }

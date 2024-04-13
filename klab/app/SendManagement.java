@@ -71,10 +71,14 @@ public class SendManagement implements Runnable{
                 //write message byte array to Node.socket
                 try {
                     Response r = findFile(search);
-                    MessageOutput out = new MessageOutput(socket.getOutputStream());
-                    r.encode(out);
-                    Node.LOGGER.log(Level.INFO, "Sent: " + r.toString() + " to " +
-                    socket.getLocalAddress() + ":" + socket.getPort());
+                    assert r != null;
+                    if (!r.getResultList().isEmpty()) {
+                        MessageOutput out = new MessageOutput(socket.getOutputStream());
+                        r.encode(out);
+                        Node.LOGGER.log(Level.INFO,
+                        "Sent: " + r.toString() + " to " +
+                        socket.getLocalAddress() + ":" + socket.getPort());
+                    }
                 } catch (Exception e) {
                     if (!socket.isClosed()) {
                         Node.LOGGER.log(Level.WARNING,

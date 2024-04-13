@@ -231,6 +231,7 @@ public class Message {
                         r.encode(out);
                     }
                 }
+                out.flush();
             } catch (IOException e) {
                 throw new IOException("Bad Write Function");
             }
