@@ -1,7 +1,8 @@
 package metanode.app;
-import metanode.serialization.*;
-import java.io.File;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
@@ -10,27 +11,11 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.*;
-public class Node {
-    static InetSocketAddress address;
-    int id;
-    public static Map<String, String> searchMap = new HashMap<>();
-    //public static Socket socket;
-    public static Socket downSocket = new Socket();
+
+import metanode.serialization.*;
+public class Client {
     public static final Logger LOGGER = Logger.getLogger("node.log");
-    public static final ExecutorService tS =
-            Executors.newSingleThreadExecutor();
-    public static String searchDir = "";
-    //ExecutorService threadPool = Executors.newFixedThreadPool(4);
-    public static final Map<String, String> dir = new HashMap<>();
-    //public static ServerSocket serverSockets;
-    public static ServerSocket serverSocket;
-    public static ServerSocket downServer;
-    public static List<Socket> connectionsList;
-    public static int downloadPort;
-    public static Object myAddr;
-    public static ExecutorService eS = Executors.newCachedThreadPool();
-    public static ExecutorService downloadClients =
-            Executors.newCachedThreadPool();
+    public static DatagramSocket udpsock;
     static {
         FileHandler f;
         ConsoleHandler c;
@@ -48,49 +33,145 @@ public class Node {
             LOGGER.setUseParentHandlers(false);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "File LOGGER not working:"
-            , e.getMessage());
+                    , e.getMessage());
         }
     }
-    public static void main(String[] args) {
-        while (true) {
-            try {
-                Scanner sc = new Scanner(System.in);
-                String input = "";
-                if (sc.hasNextLine()) {
-                    input = sc.nextLine();
-                    String[] command = input.split(" ");
-                    if (command.length == 0) {
-                        continue;
-                    }
-                    if (command[0].equals("exit")) {
-                        LOGGER.log(Level.INFO, "Node Exited");
-                        break;
-                    }
-                else if (command[0].equals("RN")) {
-                    if (command.length > 1) {
-                        LOGGER.log(Level.WARNING,
-                        "RN command expects no argument");
-                        continue;
-                    }
 
+    public static void main(String[] args) {
+        InetAddress address;
+        int port;
+        try {
+            udpsock = new DatagramSocket();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, 
+            "Error creating UDP socket: ", e.getMessage());
+            throw new IOException("Error creating UDP socket");
+        }
+        if (args.length != 2) {
+            LOGGER.log(Level.SEVERE, "Incorrect Arguments!");
+            return;
+        }
+        else {
+            //if the first argument is a valid IP address
+            //and the second argument is a valid port number
+            //I need to be able to connect to the server with UDP socket
+            if (args[0] == null) {
+                LOGGER.log(Level.SEVERE, "Invalid IP Address!");
+                return;
+            }
+            if (args[1] == null) {
+                LOGGER.log(Level.SEVERE, "Invalid Port Number!");
+                return;
+            }
+            //check that the port number is a valid number
+            if (Integer.parseInt(args[1]) < 0 
+            || Integer.parseInt(args[1]) > 65535) {
+                LOGGER.log(Level.SEVERE, "Invalid Port Number!");
+                return;
+            }
+            try {
+                address = InetAddress.getByName(args[0]);
+                port = Integer.parseInt(args[1]);
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Invalid Arguments!");
+                return;
+            }
+        }
+        int id = 0;
+        while (true) {
+            Scanner sc = new Scanner(System.in);
+            String input = "";
+            System.out.print("> ");
+            if (sc.hasNextLine()) {
+                input = sc.nextLine();
+                String[] command = input.split(" ");
+                if (command.length == 0) {
+                    continue;
                 }
-                else if (command[0].equals("RM")) {
+                if (command[0].equals("exit")) {
+                    LOGGER.log(Level.INFO, "Node Exited");
+                    break;
+                } else if (command[0].equals("RN")) {
                     if (command.length > 1) {
                         LOGGER.log(Level.WARNING,
-                    "RM command expects no argument");
+                    "Invalid Message: RN command expects no argument");
                         continue;
                     }
-                }
-                else if (command[0].equals("NA")) {
+                } else if (command[0].equals("RM")) {
+                    if (command.length > 1) {
+                        LOGGER.log(Level.WARNING,
+                    "Invalid Message: RM command expects no argument");
+                        continue;
+                    }
+                } else if (command[0].equals("NA")) {
                     if (command.length < 2) {
                         LOGGER.log(Level.WARNING,
-                    "NA commands expects at least one argument: NA");
+                                "Invalid Message: NA commands expects at " +
+                                "least one argument: NA");
+                        continue;
                     }
+                    for ()
+                } else if (command[0].equals("MA")) {
+                    if (command.length < 2) {
+                        LOGGER.log(Level.WARNING,
+                                "Invalid Message: MA commands expects at " +
+                                "least one argument: MA");
+                        continue;
+                    }
+                } else if (command[0].equals("ND")) {
+                    if (command.length < 2) {
+                        LOGGER.log(Level.WARNING,
+                                "Invalid Message: ND commands expects at " +
+                                "least one argument: ND");
+                        continue;
+                    }
+                } else if (command[0].equals("MD")) {
+                    if (command.length < 2) {
+                        LOGGER.log(Level.WARNING,
+                                "Invalid Message: MD commands expects at " +
+                                        "least one argument: MD");
+                        continue;
+                    }
+                } else {
+                    LOGGER.log(Level.WARNING, "Invalid Message: Not a valid command");
+                    continue;
                 }
-                }
-            } catch (IOException e) {
-
             }
-        return;
+            return;
+        }
+    }
+//send is blocking
+    public boolean sendAndWait(Message msg, InetAddress ip, int port) throws IOException {
+        try {
+            int count = 0;
+            //create a UDP socket
+            
+            byte[] buffer = msg.encode();
+            long start = System.currentTimeMillis();
+            DatagramPacket packet = new DatagramPacket(buffer,
+            buffer.length, ip, port);
+            udpsock.send(packet);
+            while (count < 3 && !udpsock.isClosed()) {
+                while (System.currentTimeMillis() - start < 3000 && !udpsock.isClosed()) {
+                    byte[] response = new byte[1534];
+                    DatagramPacket responsePacket = new DatagramPacket(response,
+                    1534);
+                    udpsock.receive(responsePacket);
+                    if (responsePacket.getLength() == 0) {
+                        continue;
+                    }
+                    else {
+                        udpsock.close();
+                    }
+                    Message responseMsg = new Message(responsePacket.getData());
+                }
+                count++;
+            }
+            DatagramPacket packet = new DatagramPacket(buffer,
+            buffer.length, address);
+            socket.send(packet);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Error sending message: ", e.getMessage());
+        }
     }
 }
