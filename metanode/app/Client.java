@@ -89,6 +89,8 @@ public class Client {
                     "Invalid Message: RN command expects no argument");
                         continue;
                     }
+                    Message msg = new Message(MessageType.RequestNodes, ErrorType.None, id);
+                    msg.addAddress(null, 0);
                 } else if (command[0].equals("RM")) {
                     if (command.length > 1) {
                         LOGGER.log(Level.WARNING,
@@ -169,5 +171,20 @@ public class Client {
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error sending message: ", e.getMessage());
         }
+    }
+
+    public List<InetAddress> collectIP(String input) {
+        List<InetAddress> addresses = new ArrayList<>();
+        String[] ipPortPairs = input.split(" ");
+        List<InetAddress> addresses = new ArrayList<>();
+for (String ipPortPair : ipPortPairs) {
+    String[] parts = ipPortPair.split(":");
+    String ip = parts[0];
+    int port = Integer.parseInt(parts[1]);
+    InetAddress address = InetAddress.getByName(ip);
+    addresses.add(address);
+}
+        return addresses;
+
     }
 }
