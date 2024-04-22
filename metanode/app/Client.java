@@ -136,15 +136,15 @@ public class Client {
     public boolean sendAndWait(Message msg, InetAddress ip, int port) throws IOException {
         try {
             int count = 0;
-            //create a UDP socket
-            
+            //create a UDP socket  
             byte[] buffer = msg.encode();
             long start = System.currentTimeMillis();
             DatagramPacket packet = new DatagramPacket(buffer,
             buffer.length, ip, port);
             udpsock.send(packet);
-            while (count < 3 && !udpsock.isClosed()) {
-                while (System.currentTimeMillis() - start < 3000 && !udpsock.isClosed()) {
+            boolean received = false;
+            while (count < 3 && !received) {
+                while (System.currentTimeMillis() - start < 3000 && !received) {
                     byte[] response = new byte[1534];
                     DatagramPacket responsePacket = new DatagramPacket(response,
                     1534);
@@ -153,15 +153,19 @@ public class Client {
                         continue;
                     }
                     else {
-                        udpsock.close();
+                        received = true;
                     }
                     Message responseMsg = new Message(responsePacket.getData());
                 }
                 count++;
             }
+            if (!received) {
+                return false;
+            }
             DatagramPacket packet = new DatagramPacket(buffer,
             buffer.length, address);
             socket.send(packet);
+            return true;    
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error sending message: ", e.getMessage());
         }
