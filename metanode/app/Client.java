@@ -2,6 +2,12 @@ package metanode.app;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 import java.util.logging.*;
 
 import metanode.serialization.*;
@@ -37,7 +43,7 @@ public class Client {
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, 
             "Error creating UDP socket: ", e.getMessage());
-            throw new IOException("Error creating UDP socket");
+            return;
         }
         if (args.length != 2) {
             LOGGER.log(Level.SEVERE, "Incorrect Arguments!");
@@ -89,8 +95,6 @@ public class Client {
                     "Invalid Message: RN command expects no argument");
                         continue;
                     }
-                    Message msg = new Message(MessageType.RequestNodes, ErrorType.None, id);
-                    msg.addAddress(null, 0);
                 } else if (command[0].equals("RM")) {
                     if (command.length > 1) {
                         LOGGER.log(Level.WARNING,
@@ -104,12 +108,41 @@ public class Client {
                                 "least one argument: NA");
                         continue;
                     }
-                    for ()
+                    Message msg = new Message(MessageType.NodeAdditions, ErrorType.None, id);
+                    List<InetSocketAddress> addresses = new ArrayList<>();
+                    addresses = collectIP(input);
+                    for (InetSocketAddress addr : addresses) {
+                        msg.addAddress(addr);
+                    }
+                    LOGGER.log(Level.INFO, "Sending NA message " + msg.toString());
+                    try {
+                        if (!sendAndWait(msg, address, port)) {
+                            LOGGER.log(Level.WARNING, "No response received");
+                        }
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Invalid IP address");
+                        continue;
+                    }
                 } else if (command[0].equals("MA")) {
                     if (command.length < 2) {
                         LOGGER.log(Level.WARNING,
                                 "Invalid Message: MA commands expects at " +
                                 "least one argument: MA");
+                        continue;
+                    }
+                    Message msg = new Message(MessageType.MetaNodeAdditions, ErrorType.None, id);
+                    List<InetSocketAddress> addresses = new ArrayList<>();
+                    addresses = collectIP(input);
+                    for (InetSocketAddress addr : addresses) {
+                        msg.addAddress(addr);
+                    }
+                    LOGGER.log(Level.INFO, "Sending MA message " + msg.toString());
+                    try {
+                        if (!sendAndWait(msg, address, port)) {
+                            LOGGER.log(Level.WARNING, "No response received");
+                        }
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Invalid IP address");
                         continue;
                     }
                 } else if (command[0].equals("ND")) {
@@ -119,6 +152,21 @@ public class Client {
                                 "least one argument: ND");
                         continue;
                     }
+                    Message msg = new Message(MessageType.NodeDeletions, ErrorType.None, id);
+                    List<InetSocketAddress> addresses = new ArrayList<>();
+                    addresses = collectIP(input);
+                    for (InetSocketAddress addr : addresses) {
+                        msg.addAddress(addr);
+                    }
+                    LOGGER.log(Level.INFO, "Sending ND message " + msg.toString());
+                    try {
+                        if (!sendAndWait(msg, address, port)) {
+                            LOGGER.log(Level.WARNING, "No response received");
+                        }
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Invalid IP address");
+                        continue;
+                    }
                 } else if (command[0].equals("MD")) {
                     if (command.length < 2) {
                         LOGGER.log(Level.WARNING,
@@ -126,26 +174,42 @@ public class Client {
                                         "least one argument: MD");
                         continue;
                     }
+                    Message msg = new Message(MessageType.MetaNodeDeletions, ErrorType.None, id);
+                    List<InetSocketAddress> addresses = new ArrayList<>();
+                    addresses = collectIP(input);
+                    for (InetSocketAddress addr : addresses) {
+                        msg.addAddress(addr);
+                    }
+                    LOGGER.log(Level.INFO, "Sending MD message " + msg.toString());
+                    try {
+                        if (!sendAndWait(msg, address, port)) {
+                            LOGGER.log(Level.WARNING, "No response received");
+                        }
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "Invalid IP address");
+                        continue;
+                    }
                 } else {
                     LOGGER.log(Level.WARNING, "Invalid Message: Not a valid command");
                     continue;
                 }
             }
+            sc.close();
             return;
         }
     }
 //send is blocking
-    public boolean sendAndWait(Message msg, InetAddress ip, int port) throws IOException {
+    public static boolean sendAndWait(Message msg, InetAddress ip, int port) throws IOException {
         try {
             int count = 0;
             //create a UDP socket  
-            byte[] buffer = msg.encode();
-            long start = System.currentTimeMillis();
-            DatagramPacket packet = new DatagramPacket(buffer,
-            buffer.length, ip, port);
-            udpsock.send(packet);
+            byte[] buffer = msg.encode();  
             boolean received = false;
             while (count < 3 && !received) {
+                long start = System.currentTimeMillis();
+                DatagramPacket packet = new DatagramPacket(buffer,
+                buffer.length, ip, port);
+                udpsock.send(packet);
                 while (System.currentTimeMillis() - start < 3000 && !received) {
                     byte[] response = new byte[1534];
                     DatagramPacket responsePacket = new DatagramPacket(response,
@@ -162,28 +226,36 @@ public class Client {
                 count++;
             }
             if (!received) {
-                return false;
+                return true;
             }
-            DatagramPacket packet = new DatagramPacket(buffer,
-            buffer.length, address);
-            socket.send(packet);
-            return true;    
+            return false;    
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error sending message: ", e.getMessage());
+            throw new IOException("Error sending message");
         }
     }
 
-    public List<InetAddress> collectIP(String input) {
-        List<InetAddress> addresses = new ArrayList<>();
+    public static List<InetSocketAddress> collectIP(String input) throws IllegalArgumentException {
+        List<InetSocketAddress> addresses = new ArrayList<>();
         String[] ipPortPairs = input.split(" ");
-        List<InetAddress> addresses = new ArrayList<>();
-for (String ipPortPair : ipPortPairs) {
-    String[] parts = ipPortPair.split(":");
-    String ip = parts[0];
-    int port = Integer.parseInt(parts[1]);
-    InetAddress address = InetAddress.getByName(ip);
-    addresses.add(address);
-}
+        int count = 0; 
+        for (String ipPortPair : ipPortPairs) {
+            if (count == 0) {
+                count++;
+                continue;
+            }
+            String[] parts = ipPortPair.split(":");
+            String ip = parts[0];
+            int port = Integer.parseInt(parts[1]);
+            InetAddress address;
+            try {
+                address = InetAddress.getByName(ip);
+            } catch (UnknownHostException e) {
+                throw new IllegalArgumentException("Invalid IP address");
+            }
+            InetSocketAddress socketAddress = new InetSocketAddress(address, port);
+            addresses.add(socketAddress);
+        }
         return addresses;
 
     }
