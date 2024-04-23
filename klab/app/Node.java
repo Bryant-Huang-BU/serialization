@@ -237,11 +237,13 @@ public class Node {
                             if (!s.isClosed()) {
                             Thread dSt = new Thread(
                                 new DownloadSender(s, id,  command[4]));
-                                Node.downloadClients.submit(dSt);
+                                dSt.run();
+                                //dSt.join();
                             }
                             else {
                                 Node.LOGGER.warning("Socket Connection failed");
                             }
+
                             System.out.print("> ");
                         }
                     }
@@ -260,7 +262,7 @@ public class Node {
                 }
             } catch (IOException e) {
                 Node.LOGGER.log(Level.WARNING,  
-                "Unable to communicate: "+  e.getMessage());
+                "Unable to communicate: "+ e.getMessage());
                 System.out.print("> ");
             } catch (BadAttributeValueException e) {
                 Node.LOGGER.log(Level.WARNING,

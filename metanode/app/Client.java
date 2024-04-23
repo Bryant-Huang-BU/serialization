@@ -165,10 +165,10 @@ public class Client {
                                 (command[0]), ErrorType.None, id);
                         byte[] buffer = msg.encode();
                         DatagramPacket packet =
-                                new DatagramPacket(buffer,
-                                        buffer.length, address, port);
+                        new DatagramPacket(buffer,
+                        buffer.length, address, port);
                         LOGGER.log(Level.INFO,
-                                "Message sent: " + msg.toString());
+                    "Message sent: " + msg.toString());
                         udpsock.send(packet);
                         do {
                             try {
@@ -183,23 +183,26 @@ public class Client {
                                 new DatagramPacket(
                                 response, response.length);
                                 prevtime = System.currentTimeMillis();
-                                //System.out.println(timeleft);
                                 udpsock.receive(responsePacket);
                                 timeleft -= (
                                 System.currentTimeMillis() - prevtime);
+                                //System.out.println(timeleft);
                             } catch (InterruptedIOException e) {
                                 count++;
                                 LOGGER.log(Level.INFO,
                             "No response received");
-                                msg = new Message(MessageType.getByCmd
-                                (command[0]), ErrorType.None, id);
-                                buffer = msg.encode();
-                                packet =
-                                new DatagramPacket(buffer,
-                                buffer.length, address, port);
-                                LOGGER.log(Level.INFO,
-                            "Message sent: " + msg.toString());
-                                udpsock.send(packet);
+                                if (count < 4) {
+                                    //System.out.println("RESEND" + " " + count);
+                                    msg = new Message(MessageType.getByCmd
+                                    (command[0]), ErrorType.None, id);
+                                    buffer = msg.encode();
+                                    packet =
+                                    new DatagramPacket(buffer,
+                                    buffer.length, address, port);
+                                    LOGGER.log(Level.INFO,
+                                    "Message sent: " + msg.toString());
+                                    udpsock.send(packet);
+                                }
                                 timeleft = 3000;
                                 continue;
                             }
