@@ -130,6 +130,7 @@ public class Message {
                         throw new IllegalArgumentException(
                         "Invalid port: " + ip[j]);
                     }
+
                 }
             }
             InetSocketAddress addr = new InetSocketAddress(
@@ -280,6 +281,9 @@ public class Message {
             }
             addresses.add(newAddress);
             //this.count++;
+        }
+        else {
+            throw new IllegalArgumentException("Address already exists in list");
         }
         return this;
     }
