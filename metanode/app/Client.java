@@ -192,7 +192,6 @@ public class Client {
                                 LOGGER.log(Level.INFO,
                             "No response received");
                                 if (count < 4) {
-                                    //System.out.println("RESEND" + " " + count);
                                     msg = new Message(MessageType.getByCmd
                                     (command[0]), ErrorType.None, id);
                                     buffer = msg.encode();
