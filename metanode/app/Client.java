@@ -1,3 +1,9 @@
+/************************************************
+ * Author: Bryant Huang
+ * Assignment: Program 5
+ * Class: CSI4321
+ ************************************************/
+
 package metanode.app;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -14,7 +20,7 @@ import java.util.logging.*;
 
 import metanode.serialization.*;
 /**
- * The `Client` class represents a client application that 
+ * The `Client` class represents a client application that
  * communicates with a server using UDP sockets.
  * It provides methods for sending and receiving 
  * messages to and from the server.
@@ -105,7 +111,7 @@ public class Client {
                 port = Integer.parseInt(args[1]);
             } catch (Exception e) {
                 LOGGER.log(Level.INFO,
-                        "Invalid message: " + e.getMessage());
+            "Invalid message: " + e.getMessage());
                 System.err.println("Invalid message: " + e.getMessage());
                 return;
             }
@@ -135,7 +141,7 @@ public class Client {
                     break;
                 }
                 MessageType code = MessageType.getByCmd(command[0]);
-                if (code == null) {
+                if (code == null || code.getCode() == 2) {
                     LOGGER.log(Level.INFO,
                     "Invalid Command: Bad command " + command[0]);
                     System.err.println(
