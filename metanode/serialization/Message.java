@@ -88,8 +88,8 @@ public class Message {
             throw new IllegalArgumentException("Not a valid message type");
         }
         //error is an unsigned integer
-        sessionID = (int) (buf[2] & 0xFF);
-        error = ErrorType.getByCode((int) (buf[1] & 0xFF));
+        sessionID = (buf[2] & 0xFF);
+        error = ErrorType.getByCode (buf[1] & 0xFF);
         if (error == null) {
             throw new IllegalArgumentException("Error code not valid!");
         }
@@ -98,7 +98,7 @@ public class Message {
             throw new IllegalArgumentException(
             "No error allowed for anything but Answer Request!");
         }
-        count = (int) (buf[3] & 0xFF);
+        count = (buf[3] & 0xFF);
         if (type.getCode() <= 1 && count > 1) {
             throw new IllegalArgumentException("There " +
             "should be no addresses for this message type.");
@@ -282,9 +282,9 @@ public class Message {
             addresses.add(newAddress);
             //this.count++;
         }
-        else {
+        /*else {
             throw new IllegalArgumentException("Address already exists in list");
-        }
+        }*/
         return this;
     }
 
