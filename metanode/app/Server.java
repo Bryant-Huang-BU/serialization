@@ -15,11 +15,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.*;
 import metanode.serialization.*;
+/**
+ * The Server class represents the server application for handling 
+ * communication with nodes and metanodes.
+ * It provides methods for starting the server, receiving and processing
+ * messages, and maintaining a list of nodes and metanodes.
+ */
 public class Server {
     public static final
     Logger LOGGER = Logger.getLogger("metanodelog.log");
     public static DatagramSocket udpsock;
-    public static List<Map.Entry<InetSocketAddress, Integer>> map = new ArrayList<>();
+    public static List<Map.Entry
+    <InetSocketAddress, Integer>> map = new ArrayList<>();
     public static int nodesize;
     public static int metasize;
     static {
@@ -38,6 +45,14 @@ public class Server {
                     , e.getMessage());
         }
     }
+    /**
+     * The main method is the entry point of the application.
+     * It starts the server and listens for incoming messages.
+     * 
+     * @param args The command line arguments. 
+     * Expects a single argument representing the port number.
+     * @throws IOException If there is an error in the I/O operations.
+     */
     public static void main(String[] args) throws IOException {
         if (args.length != 1) { // 1
             LOGGER.log(Level.SEVERE,
@@ -120,13 +135,13 @@ public class Server {
                 continue;
             }
             LOGGER.log(Level.INFO, "Received: "
-                    + message.toString());
+            + message.toString());
             if (message.getType().getCode() < 2) {
                 Message msg = new Message(MessageType.AnswerRequest,
-                        ErrorType.None, message.getSessionID());
+                ErrorType.None, message.getSessionID());
                 // 0 for Node, 1 for MetaNode
-                for (Map.Entry<InetSocketAddress, Integer> entry : map) { //COMMENT OUT
-                    System.out.println(entry.getValue() + " " + message.getType().getCode());
+                for (Map.Entry
+                <InetSocketAddress, Integer> entry : map) { //COMMENT OUT
                     if (entry.getValue() == message.getType().getCode()) {
                         msg.addAddress(entry.getKey()); //FIXME
                     }
@@ -138,11 +153,11 @@ public class Server {
                 }
                 byte[] buffer = msg.encode();
                 DatagramPacket packet =
-                        new DatagramPacket(buffer,
-                                buffer.length, responsePacket.getAddress(),
-                                responsePacket.getPort());
+                new DatagramPacket(buffer,
+                buffer.length, responsePacket.getAddress(),
+                responsePacket.getPort());
                 LOGGER.log(Level.INFO,
-                        "Sending: " + msg.toString());
+                "Sending: " + msg.toString());
                 udpsock.send(packet);
                 continue;
             }
@@ -150,81 +165,87 @@ public class Server {
                 for (InetSocketAddress address : message.getAddresses()) {
                     //check if each address is valid
                     //if valid and not already in map, add to list
-                    if (address.getAddress() instanceof Inet4Address) {
-                        if (address.getPort() > 0 && address.getPort() < 65535) {
-                            if (metasize!= 255) {
-                                Map.Entry<InetSocketAddress, Integer> entry =
-                                        new AbstractMap.SimpleEntry<>(address, 1);
-                                if (!dupe(entry)) { //test for duplicates //TESTME
-                                    map.add(entry);
-                                    metasize++;
-                                }
+                if (address.getAddress() instanceof Inet4Address) {
+                    if (address.getPort() > 0 && address.getPort() < 65535) {
+                        if (metasize!= 255) {
+                            Map.Entry<InetSocketAddress, Integer> entry =
+                                    new AbstractMap.SimpleEntry<>(address, 1);
+                            if (!dupe(entry)) { //test for duplicates //TESTME
+                                map.add(entry);
+                                metasize++;
                             }
                         }
                     }
+                }
                 }
                 continue;
             }
             if (message.getType() == MessageType.NodeAdditions) {
-                for (InetSocketAddress address : message.getAddresses()) {
-                    //check if each address is valid
-                    //if valid and not already in map, add to list
-                    if (address.getAddress() instanceof Inet4Address) {
-                        if (address.getPort() > 0 && address.getPort() < 65535) {
-                            if (metasize!= 255) {
-                                Map.Entry<InetSocketAddress, Integer> entry =
-                                        new AbstractMap.SimpleEntry<>(address, 0);
-                                if (!dupe(entry)) { //test for duplicates //TESTME
-                                    map.add(entry);
-                                    nodesize++;
-                                }
+            for (InetSocketAddress address : message.getAddresses()) {
+                //check if each address is valid
+                //if valid and not already in map, add to list
+                if (address.getAddress() instanceof Inet4Address) {
+                    if (address.getPort() > 0 && address.getPort() < 65535) {
+                        if (metasize!= 255) {
+                            Map.Entry<InetSocketAddress, Integer> entry =
+                                    new AbstractMap.SimpleEntry<>(address, 0);
+                            if (!dupe(entry)) { //test for duplicates //TESTME
+                                map.add(entry);
+                                nodesize++;
                             }
                         }
                     }
                 }
-                continue;
+            }
+            continue;
             }
             if (message.getType() == MessageType.NodeDeletions) {
-                for (InetSocketAddress address : message.getAddresses()) {
-                    //check if each address is valid
-                    //if valid and in map, remove from list
-                    if (address.getAddress() instanceof Inet4Address) {
-                        if (address.getPort() > 0 && address.getPort() < 65535) {
-                            if (metasize!= 255) {
-                                Map.Entry<InetSocketAddress, Integer> entry =
-                                        new AbstractMap.SimpleEntry<>(address, 0);
-                                if (dupe(entry)) { //test for existence
-                                    map.remove(entry);
-                                    nodesize--;
-                                }
+            for (InetSocketAddress address : message.getAddresses()) {
+                //check if each address is valid
+                //if valid and in map, remove from list
+                if (address.getAddress() instanceof Inet4Address) {
+                    if (address.getPort() > 0 && address.getPort() < 65535) {
+                        if (metasize!= 255) {
+                            Map.Entry<InetSocketAddress, Integer> entry =
+                                    new AbstractMap.SimpleEntry<>(address, 0);
+                            if (dupe(entry)) { //test for existence
+                                map.remove(entry);
+                                nodesize--;
                             }
                         }
                     }
                 }
-                continue;
+            }
+            continue;
             }
             if (message.getType() == MessageType.MetaNodeDeletions) {
-                for (InetSocketAddress address : message.getAddresses()) {
-                    //check if each address is valid
-                    //if valid and in map, remove from list
-                    if (address.getAddress() instanceof Inet4Address) {
-                        if (address.getPort() > 0 && address.getPort() < 65535) {
-                            if (metasize!= 255) {
-                                Map.Entry<InetSocketAddress, Integer> entry =
-                                        new AbstractMap.SimpleEntry<>(address, 1);
-                                if (dupe(entry)) { //test for duplicates //TESTME
-                                    map.remove(entry);
-                                    metasize--;
-                                }
+            for (InetSocketAddress address : message.getAddresses()) {
+                //check if each address is valid
+                //if valid and in map, remove from list
+                if (address.getAddress() instanceof Inet4Address) {
+                    if (address.getPort() > 0 && address.getPort() < 65535) {
+                        if (metasize!= 255) {
+                            Map.Entry<InetSocketAddress, Integer> entry =
+                                    new AbstractMap.SimpleEntry<>(address, 1);
+                            if (dupe(entry)) { //test for duplicates //TESTME
+                                map.remove(entry);
+                                metasize--;
                             }
                         }
                     }
                 }
             }
         }
+        }
     }
+    /**
+     * Checks if the given entry already exists in the map.
+     * 
+     * @param entry the entry to check for duplication
+     * @return true if the entry is a duplicate, false otherwise
+     */
     public static boolean dupe (Map.Entry
-                                        <InetSocketAddress, Integer> entry) {
+        <InetSocketAddress, Integer> entry) {
         for (Map.Entry<InetSocketAddress, Integer> existingEntry : map) {
             if (existingEntry.getKey().equals(entry.getKey())) {
                 return true;

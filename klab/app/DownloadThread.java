@@ -51,7 +51,6 @@ public class DownloadThread implements Runnable {
             if (in == null) {
                 throw new Exception("Error reading from socket");
             }
-            byte[] buf = new byte[1024]; // buffer for reading bytes
             // Read bytes until a newline character is encountered
             //System.out.println("FileID: ");
             // Read until new line

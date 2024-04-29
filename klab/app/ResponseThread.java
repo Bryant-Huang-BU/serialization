@@ -1,8 +1,6 @@
 package klab.app;
 
 import klab.serialization.*;
-
-import java.io.IOException;
 import java.net.Socket;
 import java.util.Base64;
 import java.util.logging.Level;

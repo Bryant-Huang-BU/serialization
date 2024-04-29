@@ -7,11 +7,8 @@
 ************************************************/
 
 package klab.serialization;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.lang.Object;
 /**
  * The MessageOutput class represents an object 
  * that writes messages to an output stream.
