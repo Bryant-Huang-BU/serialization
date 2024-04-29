@@ -84,31 +84,40 @@ public class Server {
             }
             Message message;
             try {
-                byte[] data = responsePacket.getData();
                 byte[] trimmed = new byte
-                        [responsePacket.getLength()];
+                [responsePacket.getLength()];
                 System.arraycopy(response, 0, trimmed,
                         0, trimmed.length);
                 message = new Message(trimmed);
             } catch (Exception e) {
                 LOGGER.log(Level.WARNING, "Invalid Message: "
-                        + e.getMessage()); //3
+                + e.getMessage()); //3
                 Message msg = new Message(MessageType.AnswerRequest,
-                        ErrorType.IncorrectPacket, 0);
+                ErrorType.IncorrectPacket, 0);
                 byte[] buffer = msg.encode();
                 DatagramPacket packet =
-                        new DatagramPacket(buffer,
-                                buffer.length, responsePacket.getAddress(),
-                                responsePacket.getPort());
+                new DatagramPacket(buffer,
+                buffer.length, responsePacket.getAddress(),
+                responsePacket.getPort());
                 LOGGER.log(Level.INFO,
-                        "Sending: " + msg.toString());
+                "Sending: " + msg.toString());
                 udpsock.send(packet);
                 continue;
             }
             if (message.getType() == MessageType.AnswerRequest) {
-                LOGGER.log(Level.WARNING, "Unexpected message type: " + message.toString());
+                LOGGER.log(Level.WARNING, 
+                "Unexpected message type: " + message.toString());
                 Message msg = new Message(MessageType.AnswerRequest,
-                        ErrorType.IncorrectPacket, message.getSessionID());
+                ErrorType.IncorrectPacket, message.getSessionID());
+                byte[] buffer = msg.encode();
+                DatagramPacket packet =
+                new DatagramPacket(buffer,
+                buffer.length, responsePacket.getAddress(),
+                responsePacket.getPort());
+                LOGGER.log(Level.INFO,
+                "Sending: " + msg.toString());
+                udpsock.send(packet);
+                continue;
             }
             LOGGER.log(Level.INFO, "Received: "
                     + message.toString());
