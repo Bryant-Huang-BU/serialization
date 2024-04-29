@@ -1,13 +1,11 @@
 package metanode.app.test;
 
-import java.lang.System.Logger.Level;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 
 import metanode.serialization.*;
-public class TestServerBadPacket {
+public class TestServerBadPacketShort {
     public static void main(String[] args) {
         DatagramSocket socket = null;
         try {
@@ -31,12 +29,12 @@ public class TestServerBadPacket {
         DatagramPacket responsePacket =
         new DatagramPacket(
         response, response.length);
-        socket.receive(responsePacket);
         byte[] trimmed = new byte
         [responsePacket.getLength()];
         System.arraycopy(response, 0, trimmed,
 0, trimmed.length);
         Message responseMsg = new Message(trimmed);
+        socket.receive(responsePacket);
         System.out.println(responseMsg.toString());
         } catch (Exception e) {
             e.printStackTrace();

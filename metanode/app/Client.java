@@ -269,7 +269,8 @@ public class Client {
                 "Communication problem: " + e.getMessage());
                     System.err.println(
                     "Communication problem: " + e.getMessage());
-                    //continue;
+                    sc.close();
+                    return;
                 }
                 } while (count < 4 && !received);
 
@@ -331,6 +332,8 @@ public class Client {
                     "Communication problem: ", e.getMessage());
                     System.err.println(
                     "Communication problem: " + e.getMessage());
+                    sc.close();
+                    return;
                 } catch (IllegalArgumentException e) {
                     LOGGER.log(Level.INFO,
                 "Invalid Message: ", e.getMessage());

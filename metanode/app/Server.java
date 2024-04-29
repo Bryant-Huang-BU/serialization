@@ -70,172 +70,198 @@ public class Server {
             udpsock = new DatagramSocket(port);
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE,
-                    "Startup problem: Unable to bind to port");
+        "Startup problem: Unable to bind to port");
             return;
         }
         metasize = 0;
         nodesize = 0;
-        while (true) {
-            byte[] response = new byte[1534];
-            DatagramPacket responsePacket =
-                    new DatagramPacket(
-                            response, response.length);
-            try {
-                udpsock.receive(responsePacket);
-            } catch (IOException e) {
-                LOGGER.log(Level.WARNING, "Communication Problem: " //2
-                        + e.getMessage());
-                Message msg = new Message(MessageType.AnswerRequest,
-                        ErrorType.System, 0);
-                byte[] buffer = msg.encode();
-                DatagramPacket packet =
-                        new DatagramPacket(buffer,
-                                buffer.length, responsePacket.getAddress(),
-                                responsePacket.getPort());
-                LOGGER.log(Level.INFO,
-                        "Sending: " + msg.toString());
-                udpsock.send(packet);
-                continue;
-            }
-            Message message;
-            try {
-                byte[] trimmed = new byte
-                [responsePacket.getLength()];
-                System.arraycopy(response, 0, trimmed,
-                        0, trimmed.length);
-                message = new Message(trimmed);
-            } catch (Exception e) {
-                LOGGER.log(Level.WARNING, "Invalid Message: "
-                + e.getMessage()); //3
-                Message msg = new Message(MessageType.AnswerRequest,
-                ErrorType.IncorrectPacket, 0);
-                byte[] buffer = msg.encode();
-                DatagramPacket packet =
-                new DatagramPacket(buffer,
-                buffer.length, responsePacket.getAddress(),
-                responsePacket.getPort());
-                LOGGER.log(Level.INFO,
-                "Sending: " + msg.toString());
-                udpsock.send(packet);
-                continue;
-            }
-            if (message.getType() == MessageType.AnswerRequest) {
-                LOGGER.log(Level.WARNING, 
-                "Unexpected message type: " + message.toString());
-                Message msg = new Message(MessageType.AnswerRequest,
-                ErrorType.IncorrectPacket, message.getSessionID());
-                byte[] buffer = msg.encode();
-                DatagramPacket packet =
-                new DatagramPacket(buffer,
-                buffer.length, responsePacket.getAddress(),
-                responsePacket.getPort());
-                LOGGER.log(Level.INFO,
-                "Sending: " + msg.toString());
-                udpsock.send(packet);
-                continue;
-            }
-            LOGGER.log(Level.INFO, "Received: "
-            + message.toString());
-            if (message.getType().getCode() < 2) {
-                Message msg = new Message(MessageType.AnswerRequest,
-                ErrorType.None, message.getSessionID());
-                // 0 for Node, 1 for MetaNode
-                for (Map.Entry
-                <InetSocketAddress, Integer> entry : map) { //COMMENT OUT
-                    if (entry.getValue() == message.getType().getCode()) {
-                        msg.addAddress(entry.getKey()); //FIXME
-                    }
+        try {
+            while (true) {
+                byte[] response = new byte[1534];
+                DatagramPacket responsePacket =
+                        new DatagramPacket(
+                                response, response.length);
+                try {
+                    udpsock.receive(responsePacket);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Communication Problem: " //2
+                            + e.getMessage());
+                    Message msg = new Message(MessageType.AnswerRequest,
+                            ErrorType.System, 0);
+                    byte[] buffer = msg.encode();
+                    DatagramPacket packet =
+                            new DatagramPacket(buffer,
+                                    buffer.length, responsePacket.getAddress(),
+                                    responsePacket.getPort());
+                    LOGGER.log(Level.INFO,
+                            "Sending: " + msg.toString());
+                    udpsock.send(packet);
+                    continue;
                 }
-                if (msg.getAddresses().size() != nodesize &&
+                Message message;
+                try {
+                    byte[] trimmed = new byte
+                            [responsePacket.getLength()];
+                    System.arraycopy(response, 0, trimmed,
+                            0, trimmed.length);
+                    message = new Message(trimmed);
+                } catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Communication Problem: "
+                    + e.getMessage()); //3
+                    Message msg = new Message(MessageType.AnswerRequest,
+                    ErrorType.System, 0);
+                    byte[] buffer = msg.encode();
+                    DatagramPacket packet =
+                    new DatagramPacket(buffer,
+                    buffer.length, responsePacket.getAddress(),
+                    responsePacket.getPort());
+                    LOGGER.log(Level.INFO,
+                "Sending: " + msg.toString());
+                    udpsock.send(packet);
+                    continue;
+                } catch (IllegalArgumentException e) {
+                    LOGGER.log(Level.WARNING, "Invalid Message: "
+                            + e.getMessage()); //3
+                    Message msg = new Message(MessageType.AnswerRequest,
+                            ErrorType.IncorrectPacket, 0);
+                    byte[] buffer = msg.encode();
+                    DatagramPacket packet =
+                            new DatagramPacket(buffer,
+                                    buffer.length, responsePacket.getAddress(),
+                                    responsePacket.getPort());
+                    LOGGER.log(Level.INFO,
+                            "Sending: " + msg.toString());
+                    udpsock.send(packet);
+                    continue;
+                }
+                if (message.getType() == MessageType.AnswerRequest) {
+                    LOGGER.log(Level.WARNING,
+                            "Unexpected message type: " + message.toString());
+                    Message msg = new Message(MessageType.AnswerRequest,
+                            ErrorType.IncorrectPacket, message.getSessionID());
+                    byte[] buffer = msg.encode();
+                    DatagramPacket packet =
+                            new DatagramPacket(buffer,
+                                    buffer.length, responsePacket.getAddress(),
+                                    responsePacket.getPort());
+                    LOGGER.log(Level.INFO,
+                            "Sending: " + msg.toString());
+                    udpsock.send(packet);
+                    continue;
+                }
+                LOGGER.log(Level.INFO, "Received: "
+                        + message.toString());
+                if (message.getType().getCode() < 2) {
+                    Message msg = new Message(MessageType.AnswerRequest,
+                            ErrorType.None, message.getSessionID());
+                    // 0 for Node, 1 for MetaNode
+                    for (Map.Entry
+                            <InetSocketAddress, Integer> entry : map) {
+                        if (entry.getValue() == message.getType().getCode()) {
+                            msg.addAddress(entry.getKey()); //IF issues, FIXME
+                        }
+                    }
+                    /*if (msg.getAddresses().size() != nodesize &&
                         msg.getAddresses().size() != metasize) {
-                    LOGGER.log(Level.SEVERE, "DESYNCED LIST");
-                    return;
+                        LOGGER.log(Level.SEVERE, "DESYNCED LIST");
+                        return;
+                    }*/
+                    byte[] buffer = msg.encode();
+                    DatagramPacket packet =
+                    new DatagramPacket(buffer,
+                    buffer.length, responsePacket.getAddress(),
+                    responsePacket.getPort());
+                    LOGGER.log(Level.INFO,
+                            "Sending: " + msg.toString());
+                    udpsock.send(packet);
+                    continue;
                 }
-                byte[] buffer = msg.encode();
-                DatagramPacket packet =
-                new DatagramPacket(buffer,
-                buffer.length, responsePacket.getAddress(),
-                responsePacket.getPort());
-                LOGGER.log(Level.INFO,
-                "Sending: " + msg.toString());
-                udpsock.send(packet);
-                continue;
-            }
-            if (message.getType() == MessageType.MetaNodeAdditions) {
-                for (InetSocketAddress address : message.getAddresses()) {
-                    //check if each address is valid
-                    //if valid and not already in map, add to list
-                if (address.getAddress() instanceof Inet4Address) {
-                    if (address.getPort() > 0 && address.getPort() < 65535) {
-                        if (metasize!= 255) {
-                            Map.Entry<InetSocketAddress, Integer> entry =
+                if (message.getType() == MessageType.MetaNodeAdditions) {
+                    for (InetSocketAddress address : message.getAddresses()) {
+                        //check if each address is valid
+                        //if valid and not already in map, add to list
+                    if (address.getAddress() instanceof Inet4Address) {
+                        if (address.getPort() > 0 &&
+                        address.getPort() < 65535) {
+                            if (metasize < 255) {
+                                Map.Entry<InetSocketAddress, Integer> entry =
+                                new AbstractMap.SimpleEntry<>(address, 1);
+                                if (!dupe(entry)) { //test for duplicates
+                                    // TESTME
+                                    map.add(entry);
+                                    metasize++;
+                                }
+                            }
+                        }
+                    }
+                    }
+                    //System.out.println(metasize);
+
+                    continue;
+                }
+                if (message.getType() == MessageType.NodeAdditions) {
+                    for (InetSocketAddress address : message.getAddresses()) {
+                        //check if each address is valid
+                        //if valid and not already in map, add to list
+                    if (address.getAddress() instanceof Inet4Address) {
+                        if (address.getPort() > 0 &&
+                        address.getPort() < 65535) {
+                            if (nodesize < 255) {
+                                Map.Entry<InetSocketAddress, Integer> entry =
+                                new AbstractMap.SimpleEntry<>(address, 0);
+                                if (!dupe(entry)) {
+                                //test for duplicates //TESTME
+                                    map.add(entry);
+                                    nodesize++;
+                                }
+                            }
+                        }
+                    }
+                    }
+                    //System.out.println(nodesize);
+                    continue;
+                }
+                if (message.getType() == MessageType.NodeDeletions) {
+                    for (InetSocketAddress address : message.getAddresses()) {
+                        //check if each address is valid
+                        //if valid and in map, remove from list
+                        if (address.getAddress() instanceof Inet4Address) {
+                            if (address.getPort() > 0 && address.getPort() < 65535) {
+                                if (nodesize != 0) {
+                                    Map.Entry<InetSocketAddress, Integer> entry =
+                                            new AbstractMap.SimpleEntry<>(address, 0);
+                                    if (dupe(entry)) { //test for existence
+                                        map.remove(entry);
+                                        nodesize--;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    continue;
+                }
+                if (message.getType() == MessageType.MetaNodeDeletions) {
+                    for (InetSocketAddress address : message.getAddresses()) {
+                        //check if each address is valid
+                        //if valid and in map, remove from list
+                        if (address.getAddress() instanceof Inet4Address) {
+                            if (address.getPort() > 0 && address.getPort() < 65535) {
+                                if (metasize != 0) {
+                                    Map.Entry<InetSocketAddress, Integer> entry =
                                     new AbstractMap.SimpleEntry<>(address, 1);
-                            if (!dupe(entry)) { //test for duplicates //TESTME
-                                map.add(entry);
-                                metasize++;
-                            }
-                        }
-                    }
-                }
-                }
-                continue;
-            }
-            if (message.getType() == MessageType.NodeAdditions) {
-            for (InetSocketAddress address : message.getAddresses()) {
-                //check if each address is valid
-                //if valid and not already in map, add to list
-                if (address.getAddress() instanceof Inet4Address) {
-                    if (address.getPort() > 0 && address.getPort() < 65535) {
-                        if (metasize!= 255) {
-                            Map.Entry<InetSocketAddress, Integer> entry =
-                                    new AbstractMap.SimpleEntry<>(address, 0);
-                            if (!dupe(entry)) { //test for duplicates //TESTME
-                                map.add(entry);
-                                nodesize++;
-                            }
-                        }
-                    }
-                }
-            }
-            continue;
-            }
-            if (message.getType() == MessageType.NodeDeletions) {
-            for (InetSocketAddress address : message.getAddresses()) {
-                //check if each address is valid
-                //if valid and in map, remove from list
-                if (address.getAddress() instanceof Inet4Address) {
-                    if (address.getPort() > 0 && address.getPort() < 65535) {
-                        if (metasize!= 255) {
-                            Map.Entry<InetSocketAddress, Integer> entry =
-                                    new AbstractMap.SimpleEntry<>(address, 0);
-                            if (dupe(entry)) { //test for existence
-                                map.remove(entry);
-                                nodesize--;
-                            }
-                        }
-                    }
-                }
-            }
-            continue;
-            }
-            if (message.getType() == MessageType.MetaNodeDeletions) {
-            for (InetSocketAddress address : message.getAddresses()) {
-                //check if each address is valid
-                //if valid and in map, remove from list
-                if (address.getAddress() instanceof Inet4Address) {
-                    if (address.getPort() > 0 && address.getPort() < 65535) {
-                        if (metasize!= 255) {
-                            Map.Entry<InetSocketAddress, Integer> entry =
-                                    new AbstractMap.SimpleEntry<>(address, 1);
-                            if (dupe(entry)) { //test for duplicates //TESTME
-                                map.remove(entry);
-                                metasize--;
+                                    if (dupe(entry)) { //test for duplicates //TESTME
+                                        map.remove(entry);
+                                        metasize--;
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
         }
+        catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Problem sending out error");
         }
     }
     /**
