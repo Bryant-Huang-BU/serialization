@@ -273,7 +273,8 @@ public class Server {
     public static boolean dupe (Map.Entry
         <InetSocketAddress, Integer> entry) {
         for (Map.Entry<InetSocketAddress, Integer> existingEntry : map) {
-            if (existingEntry.getKey().equals(entry.getKey())) {
+            if (existingEntry.getKey().equals(entry.getKey())
+             && existingEntry.getValue().equals(entry.getValue())) {
                 return true;
             }
         }
