@@ -303,6 +303,11 @@ public class Client {
                         System.err.println(
                                 "Invalid Message: " + e.getMessage());
                         continue;
+                    } catch (Exception e) {
+                        LOGGER.log(Level.INFO, "Invalid command!");
+                        System.err.println(
+                        "Invalid command.");
+                        continue;
                     }
                     if (addresses.size() == 0) {
                         LOGGER.log(Level.INFO, "Invalid Message");
