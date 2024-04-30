@@ -33,8 +33,8 @@ public class Server {
         FileHandler f;
         try {
             f = new FileHandler(
-                    System.getProperty("user.dir") +
-                            "\\meta.log");
+        System.getProperty("user.dir") +
+            "\\meta.log");
             f.setFormatter(new SimpleFormatter());
             LOGGER.setLevel(Level.ALL);
             f.setLevel(Level.ALL);
@@ -90,9 +90,9 @@ public class Server {
                             ErrorType.System, 0);
                     byte[] buffer = msg.encode();
                     DatagramPacket packet =
-                            new DatagramPacket(buffer,
-                                    buffer.length, responsePacket.getAddress(),
-                                    responsePacket.getPort());
+                    new DatagramPacket(buffer,
+                    buffer.length, responsePacket.getAddress(),
+                    responsePacket.getPort());
                     LOGGER.log(Level.INFO,
                             "Sending: " + msg.toString());
                     udpsock.send(packet);
@@ -126,9 +126,9 @@ public class Server {
                             ErrorType.IncorrectPacket, 0);
                     byte[] buffer = msg.encode();
                     DatagramPacket packet =
-                            new DatagramPacket(buffer,
-                                    buffer.length, responsePacket.getAddress(),
-                                    responsePacket.getPort());
+                        new DatagramPacket(buffer,
+                        buffer.length, responsePacket.getAddress(),
+                        responsePacket.getPort());
                     LOGGER.log(Level.INFO,
                             "Sending: " + msg.toString());
                     udpsock.send(packet);
@@ -136,14 +136,14 @@ public class Server {
                 }
                 if (message.getType() == MessageType.AnswerRequest) {
                     LOGGER.log(Level.WARNING,
-                            "Unexpected message type: " + message.toString());
+                    "Unexpected message type: " + message.toString());
                     Message msg = new Message(MessageType.AnswerRequest,
-                            ErrorType.IncorrectPacket, message.getSessionID());
+                    ErrorType.IncorrectPacket, message.getSessionID());
                     byte[] buffer = msg.encode();
                     DatagramPacket packet =
-                            new DatagramPacket(buffer,
-                                    buffer.length, responsePacket.getAddress(),
-                                    responsePacket.getPort());
+                    new DatagramPacket(buffer,
+                    buffer.length, responsePacket.getAddress(),
+                    responsePacket.getPort());
                     LOGGER.log(Level.INFO,
                             "Sending: " + msg.toString());
                     udpsock.send(packet);
@@ -229,7 +229,7 @@ public class Server {
                             if (address.getPort() > 0 && address.getPort() < 65535) {
                                 if (nodesize != 0) {
                                     Map.Entry<InetSocketAddress, Integer> entry =
-                                            new AbstractMap.SimpleEntry<>(address, 0);
+                                    new AbstractMap.SimpleEntry<>(address, 0);
                                     if (dupe(entry)) { //test for existence
                                         map.remove(entry);
                                         nodesize--;
@@ -245,11 +245,13 @@ public class Server {
                         //check if each address is valid
                         //if valid and in map, remove from list
                         if (address.getAddress() instanceof Inet4Address) {
-                            if (address.getPort() > 0 && address.getPort() < 65535) {
+                            if (address.getPort() > 0
+                            && address.getPort() < 65535) {
                                 if (metasize != 0) {
                                     Map.Entry<InetSocketAddress, Integer> entry =
                                     new AbstractMap.SimpleEntry<>(address, 1);
-                                    if (dupe(entry)) { //test for duplicates //TESTME
+                                    if (dupe(entry)) { 
+                                    //test for duplicates //TESTME
                                         map.remove(entry);
                                         metasize--;
                                     }

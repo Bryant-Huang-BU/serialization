@@ -112,7 +112,8 @@ public class Client {
                 } catch (Exception e) {
                     LOGGER.log(Level.INFO,
                 "Invalid Arguments: " + e.getMessage());
-                    System.err.println("Invalid Arguments: " + e.getMessage());
+                    System.err.println("Invalid Arguments: "
+                    + e.getMessage());
                     return;
                 }
             } catch (Exception e) {
@@ -144,9 +145,9 @@ public class Client {
                 MessageType code = MessageType.getByCmd(command[0]);
                 if (code == null || code.getCode() == 2) {
                     LOGGER.log(Level.INFO,
-                            "Invalid Command: Bad command " + command[0]);
+                "Invalid Command: Bad command " + command[0]);
                     System.err.println(
-                            "Invalid Command: Bad command " + command[0]);
+                    "Invalid Command: Bad command " + command[0]);
                     //System.out.println("\n> ");
                     continue;
                 }
@@ -154,9 +155,9 @@ public class Client {
                 int idprop;
                 if (code.getCode() < 2 && command.length != 1) {
                     LOGGER.log(Level.INFO,
-                            code.getCmd() + " command expects no arguments");
+                    code.getCmd() + " command expects no arguments");
                     System.err.println(
-                            code.getCmd() + " command expects no arguments");
+                    code.getCmd() + " command expects no arguments");
                     //System.out.println("\n> ");
                     continue;
                 }
@@ -189,26 +190,27 @@ public class Client {
                                     //System.out.println(timeleft);
                                     response = new byte[1534];
                                     responsePacket =
-                                            new DatagramPacket(
-                                                    response, response.length);
+                                    new DatagramPacket(
+                                    response, response.length);
                                     prevtime = System.currentTimeMillis();
                                     udpsock.receive(responsePacket);
                                     timeleft -= (
-                                            System.currentTimeMillis() - prevtime);
+                                    System.currentTimeMillis() - prevtime);
                                     //System.out.println(timeleft);
                                 } catch (InterruptedIOException e) {
                                     count++;
                                     LOGGER.log(Level.INFO,
                                             "No response received");
                                     if (count < 4) {
-                                        msg = new Message(MessageType.getByCmd
-                                                (command[0]), ErrorType.None, id);
+                                        msg = new Message(
+                                        MessageType.getByCmd
+                                        (command[0]), ErrorType.None, id);
                                         buffer = msg.encode();
                                         packet =
-                                                new DatagramPacket(buffer,
-                                                        buffer.length, address, port);
+                                        new DatagramPacket(buffer,
+                                        buffer.length, address, port);
                                         LOGGER.log(Level.INFO,
-                                                "Message sent: " + msg.toString());
+                                    "Message sent: " + msg.toString());
                                         udpsock.send(packet);
                                     }
                                     timeleft = 3000;
@@ -226,42 +228,43 @@ public class Client {
                                     Message responseMsg =
                                             new Message(trimmed);
                                     if (!responseMsg.getType()
-                                            .getCmd().equals("AR")) {
+                                        .getCmd().equals("AR")) {
                                         LOGGER.log(Level.INFO,
-                                                "Unexpected message type "
-                                                        + responseMsg.toString());
+                                    "Unexpected message type "
+                                        + responseMsg.toString());
                                         System.err.println(
-                                                "Unexpected message type");
+                                        "Unexpected message type");
                                     } else if (responseMsg.
-                                            getSessionID() != 0 &&
-                                            responseMsg.getSessionID() != id) {
+                                        getSessionID() != 0 &&
+                                        responseMsg.getSessionID() != id) {
                                         LOGGER.log(Level.INFO,
-                                                "Unexpected Session ID "
-                                                        + responseMsg.toString());
+                                    "Unexpected Session ID "
+                                        + responseMsg.toString());
                                         System.err.println(
                                                 "Unexpected Session ID");
                                     } else {
                                         LOGGER.log(Level.INFO,
-                                                "AR Message received: "
-                                                        + responseMsg.toString());
+                                    "AR Message received: "
+                                        + responseMsg.toString());
                                         System.out.println(responseMsg);
                                         if (responseMsg.getError()
-                                                .getCode() != 0) {
+                                            .getCode() != 0) {
                                             received = true;
                                             System.out.println("A " +
-                                                    ErrorType.getByCode(responseMsg.
-                                                            getError().getCode()) +
-                                                    " error has occured, code: "
-                                                    + responseMsg.getError().getCode());
+                                            ErrorType.getByCode(responseMsg.
+                                            getError().getCode()) +
+                                            " error has occured, code: "
+                                            + responseMsg.getError()
+                                            .getCode());
                                         }
                                         break;
                                     }
                                 }
                             } catch (IllegalArgumentException e) {
                                 LOGGER.log(Level.INFO,
-                                        "Invalid Message: " + e.getMessage());
+                            "Invalid Message: " + e.getMessage());
                                 System.err.println(
-                                        "Invalid Message: " + e.getMessage());
+                                "Invalid Message: " + e.getMessage());
                                 //continue;
                             }
                         }
@@ -279,12 +282,12 @@ public class Client {
                 else {
                     if (command.length < 2) {
                         LOGGER.log(Level.INFO,
-                                code.getCmd() +
-                                        " command expects at least one argument: "
-                                        + code.getCmd());
+                    code.getCmd() +
+                        " command expects at least one argument: "
+                        + code.getCmd());
                         System.err.println(code.getCmd() +
-                                " command expects at least one argument: "
-                                + code.getCmd());
+                        " command expects at least one argument: "
+                        + code.getCmd());
                         continue;
                     }
                     idprop = new Random().nextInt(256);
@@ -293,7 +296,7 @@ public class Client {
                     }
                     id = idprop;
                     Message msg = new Message(
-                            MessageType.getByCmd(command[0]), ErrorType.None, id);
+                    MessageType.getByCmd(command[0]), ErrorType.None, id);
                     List<InetSocketAddress> addresses;
                     try {
                         addresses = collectIP(input);
@@ -320,9 +323,9 @@ public class Client {
                             msg.addAddress(addr);
                         } catch (IllegalArgumentException e) {
                             LOGGER.log(Level.INFO,
-                                    "Invalid Message: " + e.getMessage());
+                        "Invalid Message: " + e.getMessage());
                             System.err.println(
-                                    "Invalid Message: " + e.getMessage());
+                            "Invalid Message: " + e.getMessage());
                             continue;
                         }
                     }
@@ -335,16 +338,16 @@ public class Client {
                         udpsock.send(packet);
                     } catch (IOException e) {
                         LOGGER.log(Level.INFO,
-                                "Communication problem: ", e.getMessage());
+                    "Communication problem: ", e.getMessage());
                         System.err.println(
-                                "Communication problem: " + e.getMessage());
+                        "Communication problem: " + e.getMessage());
                         sc.close();
                         return;
                     } catch (IllegalArgumentException e) {
                         LOGGER.log(Level.INFO,
-                                "Invalid Message: ", e.getMessage());
+                    "Invalid Message: ", e.getMessage());
                         System.err.println(
-                                "Invalid Message: " + e.getMessage());
+                        "Invalid Message: " + e.getMessage());
                     }
                     //id++;
                 }
@@ -407,7 +410,7 @@ public class Client {
                 addresses.add(socketAddress);
             } catch (IllegalArgumentException e) {
                 throw new
-                        IllegalArgumentException(e.getMessage());
+                IllegalArgumentException(e.getMessage());
             }
         }
         return addresses;
